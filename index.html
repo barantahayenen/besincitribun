@@ -55,6 +55,20 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
 .iguyari{position:fixed;left:12px;right:12px;top:auto;bottom:118px;z-index:15;background:#F4F1EA;color:#111;border-radius:12px;padding:10px 12px;font:600 13px system-ui;box-shadow:0 6px 20px rgba(0,0,0,.4);display:none}
 .iguyari b{color:#D7262E}.iguyari button{float:right;border:0;background:#111;color:#fff;border-radius:8px;padding:4px 9px;font:800 12px system-ui;margin-left:8px}
 .yd{width:48px;height:48px;border-radius:12px;border:1px solid #2a2d35;background:rgba(14,15,18,.88);color:#fff;font:900 18px system-ui}
+.giris{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 30%,rgba(60,8,10,.92),rgba(8,8,10,.97));padding:20px}
+.giris.ac{display:flex}.giris .kutu{width:100%;max-width:380px;text-align:center}
+.giris img.lg{width:116px;height:116px;border-radius:50%;border:3px solid #D7262E;box-shadow:0 0 40px rgba(215,38,46,.55)}
+.giris h1{font:900 34px system-ui;letter-spacing:2px;margin:12px 0 2px;color:#fff}.giris p{margin:0 0 18px;color:#d9d4cb;font:600 15px system-ui}
+.giris input{width:100%;box-sizing:border-box;font:700 18px system-ui;padding:14px;border-radius:12px;border:2px solid #D7262E;background:#F4F1EA;color:#111;text-align:center}
+.giris .ana{width:100%;margin-top:10px;font:900 18px system-ui;letter-spacing:1px;padding:14px;border-radius:12px;border:0;background:#D7262E;color:#fff}
+.giris .ince{margin-top:12px;background:none;border:0;color:#bdb7ad;font:700 14px system-ui;text-decoration:underline}
+.giris .not{margin-top:10px;font:600 13px system-ui;color:#ffb3b3;min-height:18px}
+.bilet{display:flex;border-radius:14px;overflow:hidden;text-align:left;box-shadow:0 10px 40px rgba(0,0,0,.6);transform:rotate(-2deg);margin:6px 0 16px}
+.bilet .sol{background:#D7262E;color:#fff;width:96px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-right:3px dashed #0e0f12;padding:10px 4px}
+.bilet .sol img{width:60px;height:60px;border-radius:50%;border:2px solid #fff}.bilet .sol b{font:900 13px system-ui;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:2px}
+.bilet .sag{flex:1;background:#F4F1EA;color:#111;padding:12px 14px}.bilet .sag .ad{font:900 20px system-ui;word-break:break-all}
+.bilet .alanlar{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-top:8px}.bilet .alanlar small{display:block;font:800 10px system-ui;color:#8a8278;letter-spacing:1px}.bilet .alanlar b{font:900 16px system-ui}
+.bilet .barkod{height:30px;margin-top:10px;background:repeating-linear-gradient(90deg,#111 0 2px,transparent 2px 4px,#111 4px 5px,transparent 5px 8px,#111 8px 11px,transparent 11px 12px)}
 .yukleniyor{position:fixed;inset:0;display:grid;place-items:center;background:#0b1020;font:800 18px system-ui;color:var(--turP)}
 </style>
 </head>
@@ -77,8 +91,9 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 3</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 4</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
+<div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
 <div class="alt">
   <div class="modlar" id="modlar"><button class="isik" id="mIsik">✨ Işık Şovu</button><button id="mStad" class="sec">Stadyum</button><button id="mMah">Mahalle</button><button id="mRast">🎲 Rastgele</button><button id="mSes">🔇 Ses</button></div>
@@ -767,19 +782,59 @@ function modSec(id){['mStad','mMah'].forEach(x=>modBtn(x).classList.toggle('sec'
 modBtn('mStad').onclick=()=>{secimiKapat(); ctl.minDistance=12; kusBtn.style.display='none'; modSec('mStad'); ucusGit(new THREE.Vector3(0,0,8),new THREE.Vector3(90,300,285),1500);};
 modBtn('mMah').onclick=()=>{secimiKapat(); ctl.minDistance=12; kusBtn.style.display='none'; modSec('mMah'); ucusGit(new THREE.Vector3(0,0,0),new THREE.Vector3(-300,330,330),1800);};
 modBtn('mRast').onclick=()=>{const n=Math.min(kapasite,TARAFTAR.length); if(!n){bilgi.innerHTML="Tribün henüz boş. İlk taraftar sen ol: <b>@besincitribun</b>'u takip et!"; bilgi.classList.add('ac'); return;} modSec(''); sec((Math.random()*n)|0);};
-// Işık şovu: çatıdan sahaya dönen ışık huzmeleri + renk değiştiren lambalar
-const huzmeler=new THREE.Group(); huzmeler.visible=false; scene.add(huzmeler);
-{const geo=new THREE.ConeGeometry(5,70,20,1,true); geo.translate(0,-35,0);
- const RENK=['#ffffff','#D7262E','#ffffff','#ff4d4d'];
- for(let i=0;i<12;i++){const a=i/12*Math.PI*2; const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({color:RENK[i%4],transparent:true,opacity:.085,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-  const g=new THREE.Group(); g.position.set(Math.cos(a)*95,46,Math.sin(a)*72); g.add(m); g.userData={a,f:i*0.7}; huzmeler.add(g);}}
-let isikSovuBitis=0; const lambaRenk=new THREE.Color('#fff6d8'), serritRenk=serritMat.color.clone();
-modBtn('mIsik').onclick=()=>{isikSovuBitis=performance.now()+12000; huzmeler.visible=true; if(sesAcik) tezahurat();};
+// IŞIK ŞOVU v2: stat karanlığa gömülür, çatı halkasından 24 huzme sahayı tarar, sahada ışık lekeleri,
+// tribünde telefon ışıkları; final: kırmızı-beyaz flaş. İkinci dokunuş şovu bitirir.
+const SOV_SURE=15000;
+const sovGrup=new THREE.Group(); sovGrup.visible=false; scene.add(sovGrup);
+const gradTex=(ic,dis,radyal)=>{const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d');
+  const g=radyal?x.createRadialGradient(64,64,0,64,64,64):x.createLinearGradient(0,0,0,128); g.addColorStop(0,ic); g.addColorStop(1,dis); x.fillStyle=g; x.fillRect(0,0,128,128); return new THREE.CanvasTexture(c);};
+const huzmeAlfa=gradTex('#ffffff','#141414',false), lekeTex=gradTex('rgba(255,255,255,1)','rgba(255,255,255,0)',true);
+const huzmeGeo=new THREE.ConeGeometry(3.2,1,28,1,true); huzmeGeo.translate(0,-0.5,0);
+const lekeGeo=new THREE.CircleGeometry(5,32); lekeGeo.rotateX(-Math.PI/2);
+const huzmeler=[];
+{const dR=KAT[2].d0+34*ROW_D-(34*ROW_D)*0.4-0.5, yR=KAT[2].taban+0.5+33*ROW_H+6.6; let i=0;
+ for(const seg of ['E','SE','S','SW','W','NW','N','NE']) for(const f of [0.2,0.5,0.8]){
+  const [a,b]=segUclar(seg,dR); const kaynak=new THREE.Vector3(a[0]+(b[0]-a[0])*f,yR,a[1]+(b[1]-a[1])*f);
+  const renk=new THREE.Color(i%3===1?'#ff2b2b':'#ffffff');
+  const g=new THREE.Group(); g.position.copy(kaynak);
+  const m=new THREE.Mesh(huzmeGeo,new THREE.MeshBasicMaterial({color:renk,alphaMap:huzmeAlfa,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+  g.add(m); sovGrup.add(g);
+  const leke=new THREE.Mesh(lekeGeo,new THREE.MeshBasicMaterial({color:renk,map:lekeTex,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false}));
+  sovGrup.add(leke); huzmeler.push({g,m,leke,i,kaynak,renk}); i++; }}
+// tribünde telefon ışıkları (3 grup, sırayla parlar → pırıltı)
+const telefonlar=[]; function telefonKur(){ telefonlar.forEach(p=>{sovGrup.remove(p); p.geometry.dispose();}); telefonlar.length=0;
+  const n=Math.min(kapasite,TARAFTAR.length); if(!n) return;
+  for(let gI=0;gI<3;gI++){ const adet=Math.min(1500,Math.ceil(n/3)), pos=new Float32Array(adet*3);
+    for(let j=0;j<adet;j++){ const kp=koltuklar[sira[(Math.random()*n)|0]].p; pos[j*3]=kp.x; pos[j*3+1]=kp.y+1.4; pos[j*3+2]=kp.z; }
+    const geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+    const pt=new THREE.Points(geo,new THREE.PointsMaterial({color:'#ffffff',size:1.1,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false}));
+    sovGrup.add(pt); telefonlar.push(pt);} }
+const _hedef=new THREE.Vector3(); let sovBas=0, sovKayit=null;
+function sovBaslat(){ sovBas=performance.now(); telefonKur(); sovGrup.visible=true;
+  const hemi=scene.children.find(o=>o.isHemisphereLight); sovKayit={hemi,hI:hemi?hemi.intensity:1,aI:ay.intensity,pI:projektor.intensity,bloom:bloom.strength};
+  modBtn('mIsik').textContent='⏹ Şovu bitir'; if(sesAcik) tezahurat(); }
+function sovBitir(){ if(!sovKayit) return; sovGrup.visible=false; const k=sovKayit; if(k.hemi) k.hemi.intensity=k.hI; ay.intensity=k.aI; projektor.intensity=k.pI; bloom.strength=k.bloom;
+  lambaMat.color.copy(lambaRenk); serritMat.color.copy(serritRenk); sovKayit=null; modBtn('mIsik').textContent='✨ Işık Şovu'; }
+const lambaRenk=lambaMat.color.clone(), serritRenk=serritMat.color.clone();
+modBtn('mIsik').onclick=()=>{ sovKayit?sovBitir():sovBaslat(); };
 function isikSovuAdim(t){
-  if(!huzmeler.visible) return;
-  if(t>isikSovuBitis){huzmeler.visible=false; lambaMat.color.copy(lambaRenk); serritMat.color.copy(serritRenk); return;}
-  huzmeler.children.forEach(g=>{const {a,f}=g.userData; g.lookAt(Math.cos(t/700+f)*30, 0, Math.sin(t/900+f)*20); g.rotateX(-Math.PI/2);});
-  const k=Math.floor(t/250)%2; lambaMat.color.set(k?'#ff2a2a':'#ffffff'); serritMat.color.set(k?'#ffffff':'#ff2a2a');
+  if(!sovKayit) return; const e=t-sovBas; if(e>SOV_SURE){sovBitir(); return;}
+  const k=sovKayit, karart=Math.min(1,e/700); // ilk 0,7 sn karartma
+  if(k.hemi) k.hemi.intensity=k.hI*(1-0.78*karart); ay.intensity=k.aI*(1-0.85*karart); projektor.intensity=k.pI*(1-0.9*karart); bloom.strength=k.bloom*(1+0.6*karart);
+  const desen=Math.floor(e/3200)%4, ts=e/1000, final=e>SOV_SURE-2600;
+  for(const h of huzmeler){ const {i}=h; let x,z;
+    if(desen===0){ const a=ts*0.9+i*(Math.PI*2/24); x=Math.cos(a)*30; z=Math.sin(a)*18; }              // dönen halka
+    else if(desen===1){ x=Math.sin(ts*1.6+i*0.26)*46; z=(i%2?-1:1)*(12+Math.sin(ts+i)*10); }            // tarayan çizgiler
+    else if(desen===2){ const m=(i%2?1:-1); x=m*(18+Math.sin(ts*2)*8); z=Math.cos(ts*2+i)*6; }        // iki merkezde toplanma
+    else { x=Math.cos(i*1.7+ts*0.5)*40; z=Math.sin(i*2.3+ts*0.7)*26; }                                  // dağınık
+    _hedef.set(x,0,z); const L=h.kaynak.distanceTo(_hedef);
+    h.g.lookAt(_hedef); h.g.rotateX(-Math.PI/2); h.m.scale.set(1,L,1);
+    h.leke.position.set(x,0.08,z);
+    let parl=karart; if(final) parl*= (Math.floor(e/120)%2 ? 1 : 0.15);
+    h.m.material.opacity=0.55*parl; h.leke.material.opacity=0.9*parl;
+    if(final) h.m.material.color.set(Math.floor(e/240)%2? '#ff2b2b':'#ffffff'); else h.m.material.color.copy(h.renk); h.leke.material.color.copy(h.m.material.color); }
+  const p=Math.floor(t/140)%3; telefonlar.forEach((pt,j)=>{pt.visible=(j===p)||final; pt.material.opacity=karart*0.95;});
+  const z=Math.floor(t/260)%2; lambaMat.color.set(z?'#ff2a2a':'#ffffff'); serritMat.color.set(z?'#ffffff':'#ff2a2a');
 }
 // Tribün sesi: kodla üretilen uğultu (dosya yok); dokunuşla açılır
 let sesAcik=false, ses=null;
@@ -803,6 +858,39 @@ const _sf=new THREE.Spherical(), _ov=new THREE.Vector3();
 function egim(d){ _ov.copy(cam.position).sub(ctl.target); _sf.setFromVector3(_ov); _sf.phi=Math.min(ctl.maxPolarAngle,Math.max(0.12,_sf.phi+d)); _ov.setFromSpherical(_sf);
   ucusGit(ctl.target.clone(), ctl.target.clone().add(_ov), 450); }
 modBtn('yUp').onclick=()=>egim(-0.18); modBtn('yDn').onclick=()=>egim(0.18);
+/* ================== GİRİŞ: BİLETİNİ AL ================== */
+const girisEl=modBtn('giris'), girisKutu=modBtn('girisKutu');
+const IG='https://www.instagram.com/besincitribun/';
+function girisFormu(not=''){
+  const eski=(()=>{try{return localStorage.getItem('bt_ben')||''}catch(e){return ''}})();
+  girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>5. TRİBÜN</h1><p>Burası senin tribünün. Biletini al, koltuğuna otur.</p>
+    <input id="gAd" placeholder="@instagram kullanıcı adın" autocapitalize="off" autocomplete="off" spellcheck="false" value="${eski?'@'+eski:''}">
+    <button class="ana" id="gAl">🎟️ BİLETİMİ AL</button><div class="not" id="gNot">${not}</div>
+    <button class="ince" id="gMisafir">Misafir olarak stadı gez</button>`;
+  const al=()=>{const q=modBtn('gAd').value.trim().replace(/^@/,'').toLowerCase(); if(!q){modBtn('gNot').textContent='Kullanıcı adını yaz.'; return;}
+    const i=TARAFTAR.findIndex(u=>String(u).toLowerCase()===q);
+    if(i<0){ girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>HENÜZ BİLETİN YOK</h1><p><b>@${q}</b> listede görünmüyor.<br>Instagram'da <b>@besincitribun</b>'u takip et; liste güncellenince koltuğun hazır.</p>
+        <a href="${IG}" target="_blank" rel="noopener"><button class="ana">📲 @besincitribun'u takip et</button></a>
+        <button class="ince" id="gTekrar">Başka bir ad dene</button><br><button class="ince" id="gMisafir2">Misafir olarak stadı gez</button>`;
+      modBtn('gTekrar').onclick=()=>girisFormu(); modBtn('gMisafir2').onclick=girisKapat; return; }
+    try{localStorage.setItem('bt_ben',TARAFTAR[i]);}catch(e){} BEN=TARAFTAR[i]; benIdxBul(); kur();
+    if(i>=kapasite){ girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>STAT DOLU</h1><p><b>@${TARAFTAR[i]}</b>, ${fmt(i+1)}. taraftarsın. Yeni tribün açılınca ilk oturanlardan biri sensin.</p><button class="ana" id="gGez">Stadı gez</button>`; modBtn('gGez').onclick=girisKapat; return; }
+    const k=sira[i], t=koltuklar[k].t;
+    girisKutu.innerHTML=`<div class="bilet"><div class="sol"><img src="logo.png" alt=""><b>5. TRİBÜN</b></div><div class="sag">
+      <small style="font:800 10px system-ui;color:#D7262E;letter-spacing:2px">${t.loca?'LOCA BİLETİ':'TARAFTAR BİLETİ'} · NO ${String(i+1).padStart(6,'0')}</small>
+      <div class="ad">@${TARAFTAR[i]}</div>
+      <div class="alanlar"><div><small>BÖLÜM</small><b>${koltukYeri(k)}</b></div><div><small>KAT</small><b>${katAdi(t)}</b></div>
+      <div><small>SIRA</small><b>${koltuklar[k].r}</b></div><div><small>KOLTUK</small><b>${koltuklar[k].no}</b></div></div><div class="barkod"></div></div></div>
+      <button class="ana" id="gGir">🏟️ STADA GİR</button><button class="ana" id="gStory" style="background:#16181D;border:2px solid #D7262E">📲 Biletini Story'de paylaş</button>`;
+    modBtn('gGir').onclick=()=>{girisKapat(); sec(i);};
+    modBtn('gStory').onclick=()=>{girisKapat(); sec(i,false); setTimeout(()=>storyYap(i,k),50);};
+  };
+  modBtn('gAl').onclick=al; modBtn('gAd').addEventListener('keydown',e=>{if(e.key==='Enter')al();});
+  modBtn('gMisafir').onclick=girisKapat;
+}
+function girisKapat(){ girisEl.classList.remove('ac'); }
+function girisGoster(){ if(url.get('giris')==='0') return; girisFormu(); girisEl.classList.add('ac'); }
+
 function adim(t){
   isikSovuAdim(t);
   if(ucusVeri){const k=Math.min(1,(t-ucusVeri.t0)/ucusVeri.dur), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
@@ -820,7 +908,8 @@ renderer.setAnimationLoop(adim);
 window.__test={dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.position.sub(ctl.target).setLength(ctl.maxDistance).add(ctl.target);},yakin:()=>{ctl.target.set(0,8,45); cam.position.set(60,95,170); ctl.update();},sec:(q)=>{document.getElementById('q').value=q; document.getElementById('git').click();},hizli:()=>{if(ucusVeri) ucusVeri.dur=1;}};
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 3 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+girisGoster();
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 4 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
