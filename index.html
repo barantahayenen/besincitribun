@@ -96,7 +96,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 17</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 18</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -172,7 +172,7 @@ const PLAT=(()=>{ const p=location.pathname.toLowerCase();
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=17;
+const SURUM=18;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(window.__VERI) VERI=window.__VERI;
@@ -778,6 +778,37 @@ const boyaArabasi=new THREE.Group(); { const m=new THREE.MeshLambertMaterial({co
   const sap=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.05),new THREE.MeshLambertMaterial({color:'#16181d'})); sap.position.set(0,0.95,-0.55); boyaArabasi.add(sap);
   for(const x of [-0.25,0.25]){ const t=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.08,10).rotateZ(Math.PI/2),new THREE.MeshLambertMaterial({color:'#111'})); t.position.set(x,0.16,0.15); boyaArabasi.add(t); }
   scene.add(boyaArabasi); }
+
+/* ================== ÇİM SULAMA: 8 dönen fıskiye, kavisli su jetleri, ıslanan çim ==================
+   Döngü: ~40 sn sulama, ~20 sn kapalı; başlıklar yerden çıkar/iner, ıslaklık yavaşça kurur. */
+const SULAMA=(()=>{ const NOK=[], NP=150, R=15, YUK=2.4, ACIK=40, KAPALI=20;
+  for(const x of [-36,-12,12,36]) for(const z of [-17,17]) NOK.push({x,z,f:(x*7+z*3)%6.28});
+  const basM=M('#9aa0ad'), basG=new THREE.CylinderGeometry(0.09,0.12,0.3,8);
+  const islakT=(()=>{const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d'); const g=x.createRadialGradient(64,64,0,64,64,64);
+    g.addColorStop(0,'rgba(10,40,20,0.55)'); g.addColorStop(0.7,'rgba(10,40,20,0.35)'); g.addColorStop(1,'rgba(10,40,20,0)'); x.fillStyle=g; x.fillRect(0,0,128,128); return new THREE.CanvasTexture(c);})();
+  const suT=(()=>{const c=document.createElement('canvas'); c.width=c.height=64; const x=c.getContext('2d'); const g=x.createRadialGradient(32,32,0,32,32,32);
+    g.addColorStop(0,'rgba(235,246,255,1)'); g.addColorStop(0.4,'rgba(190,220,255,0.6)'); g.addColorStop(1,'rgba(190,220,255,0)'); x.fillStyle=g; x.fillRect(0,0,64,64); return new THREE.CanvasTexture(c);})();
+  const pos=new Float32Array(NOK.length*NP*3), geo=new THREE.BufferGeometry(); geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+  const su=new THREE.Points(geo,new THREE.PointsMaterial({map:suT,size:0.55,sizeAttenuation:true,transparent:true,opacity:0.85,depthWrite:false,blending:THREE.AdditiveBlending,color:'#cfe6ff'}));
+  su.frustumCulled=false; scene.add(su);
+  for(const n of NOK){ n.bas=new THREE.Mesh(basG,basM); n.bas.position.set(n.x,-0.2,n.z); scene.add(n.bas);
+    n.islak=new THREE.Mesh(new THREE.PlaneGeometry(2*R*1.05,2*R*1.05).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:islakT,transparent:true,opacity:0,depthWrite:false}));
+    n.islak.position.set(n.x,0.03,n.z); n.islak.renderOrder=1; scene.add(n.islak); }
+  const rs=new Float32Array(NP), ys=new Float32Array(NP); for(let i=0;i<NP;i++){ rs[i]=0.85+Math.random()*0.3; ys[i]=(Math.random()-0.5)*0.12; }
+  let islaklik=0, sonT=0;
+  function adim(t){ const ts=t/1000, dt=Math.min(0.1,Math.max(0,ts-sonT)); sonT=ts;
+    const c=ts%(ACIK+KAPALI), acik=c<ACIK, cik=acik?Math.min(1,c/1.2):Math.max(0,1-(c-ACIK)/1.2); // başlık yüksekliği
+    const guc=acik?Math.min(1,Math.max(0,(c-0.8)/1.5))*Math.min(1,(ACIK-c)/1.2):0;
+    islaklik=THREE.MathUtils.clamp(islaklik+(acik?dt/25:-dt/45),0,1);
+    let k=0;
+    for(const n of NOK){ n.bas.position.y=-0.2+0.36*cik; n.islak.material.opacity=islaklik;
+      // darbeli fıskiye gibi: ileri-geri 200° tarar
+      const yon=n.f+Math.sin(ts*0.35+n.f)*1.75;
+      for(let i=0;i<NP;i++){ const s=((i/NP)+ts*0.9+n.f)%1, a=yon+ys[i]*2, r=s*R*rs[i]*guc, h=0.2+4*YUK*s*(1-s)*guc;
+        pos[k++]=n.x+Math.cos(a)*r; pos[k++]=guc>0.01?h:-5; pos[k++]=n.z+Math.sin(a)*r; } }
+    geo.attributes.position.needsUpdate=true; su.visible=guc>0.01; }
+  return {adim};
+})();
 function kisilerAdim(t){
   const ts=t/1000;
   for(const o of OYUNCU){ const a=o.f+ts*o.w, x=o.cx+Math.cos(a)*o.rx, z=o.cz+Math.sin(a)*o.rz, dx=-Math.sin(a)*o.rx*o.w, dz=Math.cos(a)*o.rz*o.w, hiz=Math.hypot(dx,dz);
@@ -1242,7 +1273,7 @@ function girisGoster(){ if(url.get('giris')==='0') return; girisFormu(); girisEl
 modBtn('ipucu').innerHTML=MOBIL?'<b>1 parmak</b> döndür · <b>2 parmak</b> yakınlaş/kaydır · <b>▲▼</b> yukarı-aşağı · <b>çift dokun</b> oraya uç':'<b>Sürükle</b> döndür · <b>Tekerlek</b> imlece yakınlaş · <b>WASD</b> gez · <b>Q/E</b> dön · <b>Boşluk/C</b> yukarı-aşağı · <b>Sağ tık</b> kaydır · <b>Çift tık</b> oraya uç';
 setTimeout(()=>modBtn('ipucu').classList.add('kapali'),MOBIL?7000:12000);
 function adim(t){
-  kisilerAdim(t); taraftarLOD(); EKRAN.adim(t);
+  kisilerAdim(t); taraftarLOD(); EKRAN.adim(t); SULAMA.adim(t);
   isikSovuAdim(t); girisYuruyus(t); tusHareket(t);
   if(ucusVeri){const k=Math.min(1,(t-ucusVeri.t0)/ucusVeri.dur), e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
     ctl.target.lerpVectors(ucusVeri.ft,ucusVeri.tt,e); cam.position.lerpVectors(ucusVeri.fc,ucusVeri.tc,e); cam.position.y+=Math.sin(Math.PI*e)*(ucusVeri.kavis||0); ctl.enabled=false; if(k>=1){ucusVeri=null; ctl.enabled=true;}}
@@ -1274,7 +1305,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 17 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 18 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
