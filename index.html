@@ -37,7 +37,8 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
 .etiket:after{content:"";position:absolute;left:50%;bottom:-8px;margin-left:-6px;border:6px solid transparent;border-top-color:var(--tur)}
 .kutucuk{background:rgba(255,255,255,.06);border-radius:8px;padding:6px 4px;font-size:13px}.kutucuk small{font-size:10px;opacity:.75;letter-spacing:.5px}
 .ust,.alt{z-index:5}.etiket{z-index:4}
-.isim{z-index:1;position:fixed;transform:translate(-50%,-100%);pointer-events:none;background:rgba(20,28,49,.82);color:var(--krem);font:700 11px system-ui;padding:2px 6px;border-radius:6px;white-space:nowrap;display:none}
+.isim{z-index:1;position:fixed;transform:translate(-50%,-100%);pointer-events:none;background:rgba(14,15,18,.86);color:#F4F1EA;font:700 12px system-ui;padding:3px 8px;border-radius:8px;border:1px solid rgba(215,38,46,.85);white-space:nowrap;display:none;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+.isim::after{content:'';position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);border:5px solid transparent;border-bottom:0;border-top-color:rgba(215,38,46,.85)}
 .isim.ben{background:var(--tur);color:var(--ink);font-weight:900}
 .btnler{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .btnler button{font:800 13px system-ui;padding:8px 11px;border-radius:9px;border:0;background:var(--tur);color:var(--ink)}
@@ -94,7 +95,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 14</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 15</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -165,7 +166,7 @@ const ACILIS_T0=performance.now();
 async function yukle(oran,yazi){const b=document.getElementById('yukBar'); if(b) b.style.width=Math.round(oran*100)+'%'; const y=document.getElementById('yukYazi'); if(y&&yazi) y.textContent=yazi; await new Promise(r=>setTimeout(r,0));}
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=14;
+const SURUM=15;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch('takipciler.json?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(window.__VERI) VERI=window.__VERI;
@@ -990,9 +991,12 @@ let isimListe=[], isimZaman=0; const _p=new THREE.Vector3();
 function isimleriSec(){
   isimListe=[];
   const dolu=Math.min(kapasite,TARAFTAR.length), cp=cam.position;
-  if(cp.distanceTo(ctl.target)>75 || document.getElementById('dolap').classList.contains('ac')) return;
+  if(document.getElementById('dolap').classList.contains('ac')) return;
+  const yakin=cp.distanceTo(ctl.target)<160;
+  if(benIdx>=0 && benIdx<dolu && koltuklar[sira[benIdx]].p.distanceTo(cp)<260) isimListe.push(benIdx);
+  if(!yakin) return;
   const aday=[];
-  for(let i=0;i<dolu;i++){const p=koltuklar[sira[i]].p; const dd=(p.x-cp.x)**2+(p.y-cp.y)**2+(p.z-cp.z)**2; if(dd<32*32) aday.push([dd,i]);}
+  for(let i=0;i<dolu;i++){const p=koltuklar[sira[i]].p; const dd=(p.x-cp.x)**2+(p.y-cp.y)**2+(p.z-cp.z)**2; if(dd<60*60 && i!==benIdx) aday.push([dd,i]);}
   aday.sort((a,b)=>a[0]-b[0]);
   const tut=[];
   for(const [dd,i] of aday){ if(isimListe.length>=ISIM_N) break;
@@ -1121,6 +1125,37 @@ function isikSovuAdim(t){
   if(t-_kabukT>120){ _kabukT=t; const c0=KABUK_SIRA[bolum], c1=KABUK_SIRA[(bolum+1)%4], g=Math.max(0,((e%9000)-7500)/1500);
     _kr.set(c0).lerp(_kr2.set(c1),g).multiplyScalar(0.75+0.25*Math.sin(ts*1.5)); kabukBoya(_kr2.set('#ff2b2b').lerp(_kr,K)); }
 }
+
+/* ================== DEV EKRANLAR (kale arkaları, çatı altına asılı) ==================
+   Dönüşümlü: stat adı ??? / yorumlara yaz · koltuk doluluğu · TSİ saat · takip et mesajı. Son gelenlerin adı YAZMAZ (Baran). */
+const EKRAN=(()=>{ const W=1024,H=416, cv=document.createElement('canvas'); cv.width=W; cv.height=H; const x=cv.getContext('2d');
+  const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=4;
+  const mat=new THREE.MeshBasicMaterial({map:tex, toneMapped:false});
+  const dR=KAT[2].d0+34*ROW_D-(34*ROW_D)*0.47-0.6, yR=KAT[2].taban+0.5+33*ROW_H+6.4, EW=28, EH=EW*H/W;
+  const kasaM=M('#16181d');
+  for(const [seg,yon] of [['W',Math.PI/2],['E',-Math.PI/2]]){ const [a,b]=segUclar(seg,dR), cx=(a[0]+b[0])/2, cz=(a[1]+b[1])/2;
+    const g=new THREE.Group(); g.position.set(cx,yR-EH/2-1.6,cz); g.rotation.y=yon;
+    const kasa=new THREE.Mesh(new THREE.BoxGeometry(EW+1.2,EH+1.2,0.8),kasaM); kasa.position.z=-0.45; g.add(kasa);
+    const ek=new THREE.Mesh(new THREE.PlaneGeometry(EW,EH),mat); g.add(ek);
+    for(const sx of [-1,1]){ const ip=new THREE.Mesh(new THREE.BoxGeometry(0.25,1.8,0.25),kasaM); ip.position.set(sx*EW*0.35,EH/2+1.4,-0.4); g.add(ip); }
+    scene.add(g); }
+  const KIR='#D7262E', KREM='#F4F1EA', ALT='#F2C14E';
+  const ort=(t,y,f,c)=>{x.font=f; x.fillStyle=c; x.textAlign='center'; x.textBaseline='middle'; x.fillText(t,W/2,y);};
+  function ciz(t){ const sahne=Math.floor(t/6000)%4, d=Math.min(kapasite,TARAFTAR.length);
+    x.fillStyle='#07080b'; x.fillRect(0,0,W,H);
+    // LED dokusu hissi: ince yatay çizgiler + üst/alt kırmızı bant
+    x.fillStyle=KIR; x.fillRect(0,0,W,30); x.fillRect(0,H-30,W,30);
+    x.fillStyle='#0f1116'; for(let i=0;i<14;i++){ x.beginPath(); x.moveTo(i*80,0); x.lineTo(i*80+40,0); x.lineTo(i*80+20,30); x.lineTo(i*80-20,30); x.fill(); x.beginPath(); x.moveTo(i*80,H-30); x.lineTo(i*80+40,H-30); x.lineTo(i*80+20,H); x.lineTo(i*80-20,H); x.fill(); }
+    if(sovAcik){ const k=(Math.sin(t/300)+1)/2; x.fillStyle=k>.5?KIR:'#ffffff'; x.globalAlpha=0.25+0.5*k; x.fillRect(0,30,W,H-60); x.globalAlpha=1; ort('5',H/2+8,'900 260px system-ui',k>.5?'#ffffff':KIR); }
+    else if(sahne===0){ ort('STADYUMUN ADI',118,'900 64px system-ui',KREM); ort('? ? ?',222,'900 120px system-ui',ALT); ort('YORUMLARA YAZ · EN ÇOK BEĞENİ KAZANIR',330,'800 38px system-ui',KREM); }
+    else if(sahne===1){ ort('TRİBÜNDE',92,'800 46px system-ui',KREM); ort(fmt(d),196,'900 130px system-ui','#ffffff'); ort('/ '+fmt(kapasite)+' KOLTUK',276,'800 40px system-ui',ALT);
+      x.fillStyle='#262a33'; x.fillRect(132,318,760,26); x.fillStyle=KIR; x.fillRect(132,318,Math.max(6,760*d/Math.max(1,kapasite)),26); }
+    else if(sahne===2){ const sa=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'});
+      ort('TSİ',100,'800 44px system-ui',ALT); ort(sa,214,'900 170px system-ui','#ffffff'); ort('5. TRİBÜN',330,'900 46px system-ui',KIR); }
+    else { ort('TAKİP ET',112,'900 82px system-ui','#ffffff'); ort('KOLTUĞUNA OTUR',212,'900 82px system-ui',KIR); ort('İLK 1.000 KİŞİ LOCADA ★',320,'800 44px system-ui',ALT); }
+    tex.needsUpdate=true; }
+  let son=-1e9; return { adim(t){ const sik=sovAcik?120:1000; if(t-son>=sik){ son=t; ciz(t); } } };
+})();
 // Tribün sesi: kodla üretilen uğultu (dosya yok); dokunuşla açılır
 let sesAcik=false, ses=null;
 function sesKur(){
@@ -1197,7 +1232,7 @@ function girisGoster(){ if(url.get('giris')==='0') return; girisFormu(); girisEl
 modBtn('ipucu').innerHTML=MOBIL?'<b>1 parmak</b> döndür · <b>2 parmak</b> yakınlaş/kaydır · <b>▲▼</b> yukarı-aşağı · <b>çift dokun</b> oraya uç':'<b>Sürükle</b> döndür · <b>Tekerlek</b> imlece yakınlaş · <b>WASD</b> gez · <b>Q/E</b> dön · <b>Boşluk/C</b> yukarı-aşağı · <b>Sağ tık</b> kaydır · <b>Çift tık</b> oraya uç';
 setTimeout(()=>modBtn('ipucu').classList.add('kapali'),MOBIL?7000:12000);
 function adim(t){
-  kisilerAdim(t); taraftarLOD();
+  kisilerAdim(t); taraftarLOD(); EKRAN.adim(t);
   isikSovuAdim(t); girisYuruyus(t); tusHareket(t);
   if(ucusVeri){const k=Math.min(1,(t-ucusVeri.t0)/ucusVeri.dur), e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
     ctl.target.lerpVectors(ucusVeri.ft,ucusVeri.tt,e); cam.position.lerpVectors(ucusVeri.fc,ucusVeri.tc,e); cam.position.y+=Math.sin(Math.PI*e)*(ucusVeri.kavis||0); ctl.enabled=false; if(k>=1){ucusVeri=null; ctl.enabled=true;}}
@@ -1229,7 +1264,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 14 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 15 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
