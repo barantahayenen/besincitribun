@@ -93,7 +93,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 10</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 11</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -164,7 +164,7 @@ const ACILIS_T0=performance.now();
 async function yukle(oran,yazi){const b=document.getElementById('yukBar'); if(b) b.style.width=Math.round(oran*100)+'%'; const y=document.getElementById('yukYazi'); if(y&&yazi) y.textContent=yazi; await new Promise(r=>setTimeout(r,0));}
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=10;
+const SURUM=11;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch('takipciler.json?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(window.__VERI) VERI=window.__VERI;
@@ -404,8 +404,8 @@ function locaKur(t){
   kat(KUTU(L+0.4,0.25,der),'locaZemin',0,yZ-0.12,(zOn+zArka)/2);           // zemin
   kat(KUTU(L+0.4,0.3,der+0.3),'koyu',0,yZ+H+0.15,(zOn+zArka)/2);           // tavan
   kat(KUTU(L+0.4,H,0.2),'locaDuvar',0,yZ+H/2,zArka+0.1);                   // ışıklı arka duvar
-  kat(KUTU(L+0.4,0.28,0.25),'tur',0,yZ+H-0.05,zOn+0.05);                   // kırmızı alın bandı
-  kat(KUTU(L+0.4,0.12,0.3),'tur',0,yZ+0.9,zOn+0.05);                       // korkuluk
+  kat(KUTU(L+0.6,0.85,0.3),'altin',0,yZ+H+0.25,zOn+0.05);                   // altın alın bandı (parlar)
+  kat(KUTU(L+0.4,0.08,0.12),'altinKoyu',0,yZ+0.95,zOn+0.05);                // iç korkuluk
   for(let i=0;i<=LOCA_SAYI;i++) kat(KUTU(0.12,H,der),'koyu',-L/2+i*w,yZ+H/2,(zOn+zArka)/2);  // bölmeler
   const cam=new THREE.Mesh(new THREE.PlaneGeometry(L,H-0.3),new THREE.MeshBasicMaterial({color:'#ffd27a',transparent:true,opacity:.26,depthWrite:false}));
   cam.position.set(0,yZ+H/2-0.1,zOn); g.add(cam);
@@ -414,9 +414,35 @@ function locaKur(t){
     for(let r=0;r<LOCA_SIRA;r++){ const z=zOn-0.45-r*ara, y=yZ+0.12+r*0.2;
       kat(KUTU(w-0.3,0.18+r*0.2,ara*0.9),'locaZemin',x0+w/2,yZ+(0.18+r*0.2)/2-0.05,z-0.05);
       for(let j=0;j<LOCA_KOLTUK;j++){ const x=x0+w/2+(j-(LOCA_KOLTUK-1)/2)*SEAT_W; koltuklar.push({p:new THREE.Vector3(x,y+0.25,z),t,r:r+1,no:j+1,ad:'Loca '+no}); } } }
+  // ---- görkem: öne taşan cam balkon, altın çerçeve, avizeler, ortada başkanlık locası ----
+  const BK=1.7, BKm=3.4, Wm=w*4;                               // balkon derinliği (orta bölümde daha derin)
+  for(const [x0,x1,bd] of [[-L/2-0.2,-Wm/2,BK],[Wm/2,L/2+0.2,BK],[-Wm/2,Wm/2,BKm]]){ const gw=x1-x0, cx=(x0+x1)/2;
+    kat(KUTU(gw,0.32,bd),'koyu',cx,yZ-0.28,zOn+bd/2);                       // balkon döşemesi
+    kat(KUTU(gw,0.1,0.14),'altin',cx,yZ-0.42,zOn+bd);                       // döşeme altı altın ışık çizgisi
+    kat(KUTU(gw,0.12,0.12),'altinKoyu',cx,yZ+1.05,zOn+bd-0.05);             // cam korkuluk üst küpeştesi
+    const kc=new THREE.Mesh(new THREE.PlaneGeometry(gw,1.0),new THREE.MeshBasicMaterial({color:'#ffe2a0',transparent:true,opacity:.18,depthWrite:false,side:THREE.DoubleSide}));
+    kc.position.set(cx,yZ+0.5,zOn+bd-0.05); g.add(kc); }
+  for(const sx of [-1,1]) kat(KUTU(0.12,1.1,BKm-BK),'altinKoyu',sx*Wm/2,yZ+0.5,zOn+BK+(BKm-BK)/2);   // orta balkonun yan camları
+  for(let i=0;i<=LOCA_SAYI;i++) kat(KUTU(0.16,H+0.1,0.16),'altin',-L/2+i*w,yZ+H/2,zOn+0.12);       // bölmeler arası altın dikmeler
+  for(let i=0;i<LOCA_SAYI;i++){ const cx=-L/2+(i+0.5)*w;
+    kat(new THREE.SphereGeometry(0.26,8,6),'avize',cx,yZ+H-0.55,(zOn+zArka)/2);                  // avize
+    kat(KUTU(0.03,0.4,0.03),'altinKoyu',cx,yZ+H-0.2,(zOn+zArka)/2); }
+  // balkonların altından alt tribüne düşen sıcak ışık
+  { const c=document.createElement('canvas'); c.width=4; c.height=64; const x=c.getContext('2d'), gr=x.createLinearGradient(0,0,0,64); gr.addColorStop(0,'#fff'); gr.addColorStop(1,'#000'); x.fillStyle=gr; x.fillRect(0,0,4,64);
+    const pg=new THREE.PlaneGeometry(L,1,1,1), pz=pg.attributes.position; // üst kenar balkon altı, alt kenar 6 m önde ve 4 m aşağıda
+    for(let q=0;q<pz.count;q++){ const ust=pz.getY(q)>0; pz.setXYZ(q,pz.getX(q),ust?yZ-0.5:yZ-4.6,ust?zOn+BK:zOn+7); } pg.computeVertexNormals();
+    const isik=new THREE.Mesh(pg,new THREE.MeshBasicMaterial({color:'#ffcf7a',alphaMap:new THREE.CanvasTexture(c),transparent:true,opacity:.22,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
+    g.add(isik); }
+  // başkanlık locası: kırmızı arka duvar, üstte altın kenarlı saçak, iki altın sütun
+  kat(KUTU(Wm-0.2,H-0.1,0.22),'kadife',0,yZ+H/2,zArka+0.22);
+  kat(KUTU(Wm+2.4,0.4,BKm+1.2),'koyu',0,yZ+H+0.55,zOn+(BKm+1.2)/2-0.4);
+  kat(KUTU(Wm+2.4,0.2,0.18),'altin',0,yZ+H+0.55,zOn+BKm+0.8);
+  for(const sx of [-1,1]){ kat(KUTU(Wm*0+0.18,0.2,BKm+1.2),'altin',sx*(Wm/2+1.2),yZ+H+0.55,zOn+(BKm+1.2)/2-0.4);
+    kat(new THREE.CylinderGeometry(0.22,0.26,H+0.9,12),'altinKoyu',sx*(Wm/2+0.9),yZ+(H+0.9)/2-0.4,zOn+BKm+0.5); }
+  for(let i=0;i<6;i++) kat(new THREE.SphereGeometry(0.16,8,6),'avize',-Wm/2+0.9+i*(Wm-1.8)/5,yZ+H+0.3,zOn+BKm+0.35);   // saçak altı spotlar
   T.bitir(g); scene.add(g); tribunGrup.push(g); t.son=koltuklar.length; t.hedef=t.son-t.ilk;
 }
-INS_MAT.locaZemin=M('#5a3520'); INS_MAT.locaDuvar=new THREE.MeshBasicMaterial({color:'#c07a30'});
+INS_MAT.locaZemin=M('#5a3520'); INS_MAT.locaDuvar=new THREE.MeshBasicMaterial({color:'#d08a3a'}); INS_MAT.altin=new THREE.MeshBasicMaterial({color:'#ffc94a'}); INS_MAT.altinKoyu=new THREE.MeshStandardMaterial({color:'#c99a3a',metalness:.6,roughness:.35,emissive:'#3a2808'}); INS_MAT.avize=new THREE.MeshBasicMaterial({color:'#fff3cf'}); INS_MAT.kadife=new THREE.MeshBasicMaterial({color:'#8e1a20'});
 for(const t of TRIBUNLER){
   if(++_ti%3===0) await yukle(0.1+0.5*_ti/TRIBUNLER.length);
   if(t.loca){locaKur(t); continue;}
@@ -1075,7 +1101,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 10 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 11 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
