@@ -94,7 +94,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 12</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 13</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -165,7 +165,7 @@ const ACILIS_T0=performance.now();
 async function yukle(oran,yazi){const b=document.getElementById('yukBar'); if(b) b.style.width=Math.round(oran*100)+'%'; const y=document.getElementById('yukYazi'); if(y&&yazi) y.textContent=yazi; await new Promise(r=>setTimeout(r,0));}
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=12;
+const SURUM=13;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch('takipciler.json?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(window.__VERI) VERI=window.__VERI;
@@ -463,11 +463,28 @@ for(const t of TRIBUNLER){
 // Koltuk numarası = koltuklar dizisindeki sıra; taraftar i → koltuk i (aşamadaki kapasite kadar)
 const N=koltuklar.length;
 const kutu=new THREE.BoxGeometry(0.42,0.42,0.42);
-const govde=new THREE.BoxGeometry(0.42,0.6,0.34);
-const kafa=new THREE.BoxGeometry(0.3,0.3,0.3);
+// TARAFTAR KARAKTERİ (5. Tribün): sahaya dönük oturan figür. insanMesh = forma (gövde + kollar, örnek rengi),
+// kafaMesh = köşe renkli geri kalan (pantolon, eller, kafa, saç, gözler; örnek rengi = ten). Uzakta sade model (LOD).
+const _kb=(w,h,d,x,y,z,rx=0)=>{const g=new THREE.BoxGeometry(w,h,d); if(rx) g.rotateX(rx); return g.translate(x,y,z);};
+const _boya=(g,c)=>{const n=g.attributes.position.count,a=new Float32Array(n*3),k=new THREE.Color(c); for(let i=0;i<n;i++){a[i*3]=k.r;a[i*3+1]=k.g;a[i*3+2]=k.b;} g.setAttribute('color',new THREE.BufferAttribute(a,3)); return g;};
+const _bel=(g,alt=0.84)=>{const p=g.attributes.position; g.computeBoundingBox(); const b=g.boundingBox; for(let i=0;i<p.count;i++){const t=(p.getY(i)-b.min.y)/(b.max.y-b.min.y); p.setX(i,p.getX(i)*(alt+(1-alt)*t));} return g;};
+const YS=0.21, PANT='#323a52', SAC='#2a1d14';
+const govde=mergeGeometries([_bel(_kb(0.36,0.46,0.22,0,YS+0.27,-0.05)), _kb(0.1,0.36,0.11,-0.235,YS+0.29,0.02,-0.55), _kb(0.1,0.36,0.11,0.235,YS+0.29,0.02,-0.55)]);
+const kafa=mergeGeometries([_boya(_kb(0.34,0.14,0.42,0,YS+0.07,0.15),PANT), _boya(_kb(0.3,0.4,0.12,0,YS-0.13,0.37),PANT),
+  _boya(_kb(0.09,0.09,0.1,-0.22,YS+0.13,0.2),'#ffffff'), _boya(_kb(0.09,0.09,0.1,0.22,YS+0.13,0.2),'#ffffff'),
+  _boya(_kb(0.24,0.27,0.24,0,YS+0.66,-0.04),'#ffffff'), _boya(_kb(0.26,0.08,0.26,0,YS+0.81,-0.05),SAC), _boya(_kb(0.26,0.15,0.06,0,YS+0.72,-0.165),SAC),
+  _boya(_kb(0.045,0.05,0.02,-0.06,YS+0.68,0.085),'#15100c'), _boya(_kb(0.045,0.05,0.02,0.06,YS+0.68,0.085),'#15100c')]);
+const govdeSadeG=_kb(0.38,0.5,0.28,0,YS+0.29,-0.03), kafaSadeG=_boya(_kb(0.25,0.27,0.25,0,YS+0.67,-0.04),'#ffffff');
 const koltukMesh=new THREE.InstancedMesh(kutu,new THREE.MeshLambertMaterial(),N);
 const insanMesh=new THREE.InstancedMesh(govde,new THREE.MeshLambertMaterial(),N);
-const kafaMesh=new THREE.InstancedMesh(kafa,new THREE.MeshLambertMaterial(),N);
+const kafaMesh=new THREE.InstancedMesh(kafa,new THREE.MeshLambertMaterial({vertexColors:true}),N);
+const insanSade=new THREE.InstancedMesh(govdeSadeG,insanMesh.material,N), kafaSade=new THREE.InstancedMesh(kafaSadeG,kafaMesh.material,N);
+insanSade.visible=kafaSade.visible=false; insanSade.frustumCulled=kafaSade.frustumCulled=false;
+function taraftarLOD(){ // kamera uzaksa sade model (telefonda akıcılık)
+  const uzak=cam.position.distanceTo(ctl.target)>150;
+  insanSade.count=insanMesh.count; kafaSade.count=kafaMesh.count;
+  insanMesh.visible=kafaMesh.visible=!uzak; insanSade.visible=kafaSade.visible=uzak; }
+const _yuz=k=>{const p=koltuklar[k].p, dx=THREE.MathUtils.clamp(p.x,-PL/2,PL/2)-p.x, dz=THREE.MathUtils.clamp(p.z,-PW/2,PW/2)-p.z; return Math.atan2(dx,dz);};
 const TEN=['#e0b08a','#c98f63','#a8714a','#f0c8a0','#8a5a3a'];
 const FORMA=['#D7262E','#D7262E','#F4F1EA','#16181D','#D7262E','#ffffff','#b81d24','#D7262E','#16181D','#F4F1EA'];
 let kapasite=0, sira=[]; // sira[k] = koltuklar indeksi
@@ -492,11 +509,14 @@ function kur(){
     const dolu=i<Math.min(kapasite,TARAFTAR.length);
     const h=hash(TARAFTAR[i]||'');
     const gizli=dolu && i===benIdx; // kendi avatarın ayrı çizilir
-    if(dolu&&!gizli){const k=sira[i]; tmp.position.copy(koltuklar[k].p); tmp.position.y+=0.42; tmp.scale.setScalar(1);}
-    else tmp.scale.setScalar(0);
+    if(dolu&&!gizli){const k=sira[i]; tmp.position.copy(koltuklar[k].p); tmp.rotation.set(0,_yuz(k),0); tmp.scale.setScalar(1);}
+    else {tmp.rotation.set(0,0,0); tmp.scale.setScalar(0);}
     tmp.updateMatrix(); insanMesh.setMatrixAt(i,tmp.matrix); insanMesh.setColorAt(i,col.set(FORMA[h%FORMA.length]));
-    if(dolu&&!gizli) tmp.position.y+=0.47; tmp.updateMatrix(); kafaMesh.setMatrixAt(i,tmp.matrix); kafaMesh.setColorAt(i,col.set(TEN[(h>>>5)%TEN.length]));
+    kafaMesh.setMatrixAt(i,tmp.matrix); kafaMesh.setColorAt(i,col.set(TEN[(h>>>5)%TEN.length]));
   }
+  tmp.rotation.set(0,0,0);
+  insanSade.instanceMatrix=insanMesh.instanceMatrix; insanSade.instanceColor=insanMesh.instanceColor;
+  kafaSade.instanceMatrix=kafaMesh.instanceMatrix; kafaSade.instanceColor=kafaMesh.instanceColor;
   koltukMesh.instanceMatrix.needsUpdate=insanMesh.instanceMatrix.needsUpdate=kafaMesh.instanceMatrix.needsUpdate=true;
   koltukMesh.instanceColor.needsUpdate=insanMesh.instanceColor.needsUpdate=kafaMesh.instanceColor.needsUpdate=true;
   koltukMesh.computeBoundingSphere(); insanMesh.computeBoundingSphere(); kafaMesh.computeBoundingSphere();
@@ -508,7 +528,7 @@ function kur(){
   document.querySelectorAll('#test button[data-ins]').forEach(b=>b.classList.toggle('sec',INSAAT.includes(b.dataset.ins)));
   const u=new URL(location.href); u.searchParams.set('acik',ACIK.join(',')); u.searchParams.set('insaat',INSAAT.join(',')); try{history.replaceState(null,'',u);}catch(e){}
 }
-scene.add(koltukMesh,insanMesh,kafaMesh);
+scene.add(koltukMesh,insanMesh,kafaMesh,insanSade,kafaSade);
 function hash(s){let h=0;for(const ch of s)h=(h*31+ch.charCodeAt(0))>>>0;return h;}
 const fmt=n=>n.toLocaleString('tr-TR');
 
@@ -692,7 +712,84 @@ function girisYuruyus(t){ const {govde,kafa,yol,N}=girisYurUyen; if(!govde) retu
 // sahadaki oyuncular
 {
   let s=3; const r=()=>(s=(s*16807)%2147483647)/2147483647;
-  for(let i=0;i<22;i++){const m=new THREE.Mesh(new THREE.BoxGeometry(0.7,1.8,0.5),M(i<11?'#D7262E':'#F4F1EA')); m.position.set((r()-.5)*90,0.9,(r()-.5)*58); scene.add(m);}
+}
+/* ================== YÜRÜYEN İNSANLAR: sahada ısınan oyuncular, merdivenlerde sarı yelekli görevliler, çim bakım ekibi ==================
+   Hepsi tek tip ayakta figür; 4 örnekli çizim (gövde, kafa+saç, kollar, bacaklar), her karede eklem açıları hesaplanır. */
+const KISI=(()=>{
+  const MAX=60, S=1.0;
+  const govdeG=mergeGeometries([_bel(_kb(0.38,0.52,0.24,0,1.17,0),0.86), _kb(0.36,0.1,0.22,0,0.87,0)]);       // forma + bel
+  const kafaG=mergeGeometries([_boya(_kb(0.12,0.08,0.12,0,1.47,0),'#ffffff'), _boya(_kb(0.25,0.28,0.25,0,1.64,0),'#ffffff'),
+    _boya(_kb(0.27,0.08,0.27,0,1.8,-0.01),SAC), _boya(_kb(0.27,0.16,0.06,0,1.7,-0.12),SAC),
+    _boya(_kb(0.045,0.05,0.02,-0.06,1.66,0.126),'#15100c'), _boya(_kb(0.045,0.05,0.02,0.06,1.66,0.126),'#15100c')]);
+  const kolG=mergeGeometries([_boya(_kb(0.11,0.3,0.12,0,-0.15,0),'#ffffff'), _boya(_kb(0.09,0.26,0.1,0,-0.42,0),'#f1d2b4')]);  // kol (omuzdan sarkar) + el
+  const bacakG=mergeGeometries([_boya(_kb(0.15,0.78,0.16,0,-0.39,0),'#ffffff'), _boya(_kb(0.15,0.08,0.24,0,-0.82,0.04),'#16181d')]); // bacak (kalçadan) + ayakkabı
+  const mL=new THREE.MeshLambertMaterial(), mV=new THREE.MeshLambertMaterial({vertexColors:true});
+  const G=new THREE.InstancedMesh(govdeG,mL,MAX), K=new THREE.InstancedMesh(kafaG,mV,MAX), A=new THREE.InstancedMesh(kolG,mV,MAX*2), B=new THREE.InstancedMesh(bacakG,mV,MAX*2);
+  for(const m of [G,K,A,B]){ m.frustumCulled=false; m.count=0; scene.add(m); }
+  const liste=[], c=new THREE.Color();
+  const ekle=(o)=>{ const i=liste.length; o.i=i; liste.push(o);
+    G.setColorAt(i,c.set(o.forma)); K.setColorAt(i,c.set(o.ten||'#e0b08a')); A.setColorAt(i*2,c.set(o.kol||o.forma)); A.setColorAt(i*2+1,c.set(o.kol||o.forma));
+    B.setColorAt(i*2,c.set(o.pant||'#2a3142')); B.setColorAt(i*2+1,c.set(o.pant||'#2a3142'));
+    G.count=K.count=liste.length; A.count=B.count=liste.length*2;
+    for(const m of [G,K,A,B]) m.instanceColor.needsUpdate=true; return o; };
+  const mB=new THREE.Matrix4(), mX=new THREE.Matrix4(), mT=new THREE.Matrix4(), q=new THREE.Quaternion(), YX=new THREE.Vector3(0,1,0), v=new THREE.Vector3(), sc=new THREE.Vector3(S,S,S);
+  // poz: {x,y,z,yon, ad (adım fazı, radyan), adim (0..1 sallanma), otur (0/1), kolOn (kollar öne, ör. araba iterken)}
+  function koy(o,pz){
+    const bob=pz.otur?0:Math.abs(Math.cos(pz.ad))*0.05*pz.adim;
+    mB.compose(v.set(pz.x,pz.y+bob,pz.z),q.setFromAxisAngle(YX,pz.yon),sc);
+    G.setMatrixAt(o.i,mB); K.setMatrixAt(o.i,mB);
+    const sw=Math.sin(pz.ad)*0.7*pz.adim, kolX=pz.kolOn?-1.1:0;
+    for(const s of [-1,1]){ const j=o.i*2+(s>0?1:0);
+      mT.makeTranslation(s*0.25,1.4,0); mX.makeRotationX(kolX+(pz.kolOn?0:s*sw)); A.setMatrixAt(j,mT.premultiply(mB).multiply(mX));
+      mT.makeTranslation(s*0.1,0.86,0); mX.makeRotationX(pz.otur?-1.45:-s*sw); B.setMatrixAt(j,mT.premultiply(mB).multiply(mX)); }
+  }
+  function bitir(){ for(const m of [G,K,A,B]) m.instanceMatrix.needsUpdate=true; }
+  return {ekle,koy,bitir,liste};
+})();
+// --- sahada ısınan oyuncular: iki grup (kırmızı/beyaz yelek), elips çizerek koşu ---
+const OYUNCU=[]; { let s=3; const r=()=>(s=(s*16807)%2147483647)/2147483647; const TENLER=['#e0b08a','#c98f63','#a8714a','#f0c8a0','#8a5a3a'];
+  for(let i=0;i<22;i++){ const kir=i<11; OYUNCU.push(KISI.ekle({forma:kir?'#D7262E':'#F4F1EA', kol:kir?'#D7262E':'#F4F1EA', pant:kir?'#16181D':'#F4F1EA', ten:TENLER[i%5],
+    cx:(kir?-1:1)*(16+r()*18), cz:(r()-.5)*36, rx:4+r()*9, rz:3+r()*7, w:(0.18+r()*0.12)*(r()<.5?1:-1), f:r()*6.28})); } }
+// --- merdiven görevlileri: alt tribün merdivenlerinde inip çıkar, uçlarda durup tribüne bakar ---
+const GOREVLI=[]; { const K1=KAT[1];
+  const sec=[['N',-2],['N',0],['N',2],['S',-1],['S',1],['W',-1],['W',1],['E',-1],['E',1],['S',3]];
+  sec.forEach(([seg,k],j)=>{ const [a,b]=segUclar(seg,K1.d0), L=Math.hypot(b[0]-a[0],b[1]-a[1]); if(Math.abs(k*KORIDOR)>L/2-1.2) return;
+    GOREVLI.push(KISI.ekle({forma:'#ffd21a', kol:'#1f2633', pant:'#1f2633', ten:['#e0b08a','#c98f63','#f0c8a0'][j%3], seg, k, f:j*1.7})); }); }
+function merdivenNokta(seg,k,d){ const [a,b]=segUclar(seg,d), L=Math.hypot(b[0]-a[0],b[1]-a[1]), ux=(b[0]-a[0])/L, uz=(b[1]-a[1])/L;
+  return [(a[0]+b[0])/2+ux*k*KORIDOR,(a[1]+b[1])/2+uz*k*KORIDOR]; }
+// --- çim bakım: sürücülü biçme aracı (şerit şerit), çizgi boyacısı (taç çizgisi boyunca araba iter) ---
+const bicme=new THREE.Group(); { const g=bicme, kM=(c)=>new THREE.MeshLambertMaterial({color:c});
+  const p=(w,h,d,x,y,z,m)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); g.add(o); return o;};
+  p(1.3,0.45,2.0,0,0.5,0,kM('#2f7d3a')); p(1.5,0.22,1.0,0,0.22,1.25,kM('#3a3f48')); p(0.7,0.12,0.6,0,0.82,-0.35,kM('#16181d')); p(0.6,0.5,0.08,0,1.05,-0.66,kM('#16181d'));
+  p(0.08,0.55,0.08,0,1.0,0.45,kM('#16181d')); p(0.45,0.06,0.06,0,1.27,0.45,kM('#16181d'));
+  for(const [x,z] of [[-0.62,-0.7],[0.62,-0.7],[-0.55,0.75],[0.55,0.75]]){ const t=new THREE.Mesh(new THREE.CylinderGeometry(z<0?0.32:0.22,z<0?0.32:0.22,0.2,12).rotateZ(Math.PI/2),kM('#111')); t.position.set(x,z<0?0.32:0.22,z); g.add(t); }
+  const far=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.12,0.04),new THREE.MeshBasicMaterial({color:'#fff3c4'})); far.position.set(0,0.68,1.01); g.add(far);
+  g.scale.setScalar(1.15); scene.add(g); }
+const surucu=KISI.ekle({forma:'#f07c1a', kol:'#f07c1a', pant:'#2b3a2b', ten:'#c98f63'});
+const boyaci=KISI.ekle({forma:'#2f7d3a', kol:'#2f7d3a', pant:'#2b3a2b', ten:'#e0b08a'});
+const boyaArabasi=new THREE.Group(); { const m=new THREE.MeshLambertMaterial({color:'#d8dde6'}); const k=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.35,0.7),m); k.position.y=0.45; boyaArabasi.add(k);
+  const sap=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.05,0.05),new THREE.MeshLambertMaterial({color:'#16181d'})); sap.position.set(0,0.95,-0.55); boyaArabasi.add(sap);
+  for(const x of [-0.25,0.25]){ const t=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.08,10).rotateZ(Math.PI/2),new THREE.MeshLambertMaterial({color:'#111'})); t.position.set(x,0.16,0.15); boyaArabasi.add(t); }
+  scene.add(boyaArabasi); }
+function kisilerAdim(t){
+  const ts=t/1000;
+  for(const o of OYUNCU){ const a=o.f+ts*o.w, x=o.cx+Math.cos(a)*o.rx, z=o.cz+Math.sin(a)*o.rz, dx=-Math.sin(a)*o.rx*o.w, dz=Math.cos(a)*o.rz*o.w, hiz=Math.hypot(dx,dz);
+    KISI.koy(o,{x,y:0,z,yon:Math.atan2(dx,dz),ad:ts*hiz*4.2+o.f,adim:1}); }
+  for(const o of GOREVLI){ const K1=KAT[1], d0=K1.d0+0.4, d1=K1.d0+(K1.satir-1)*ROW_D, YUK=22, BEK=5, cyc=(ts+o.f*7)%(2*(YUK+BEK));
+    let f, yukari, dur=0; if(cyc<YUK){f=cyc/YUK; yukari=1;} else if(cyc<YUK+BEK){f=1; dur=1; yukari=1;} else if(cyc<2*YUK+BEK){f=1-(cyc-YUK-BEK)/YUK; yukari=0;} else {f=0; dur=1; yukari=0;}
+    const d=d0+(d1-d0)*f, r=Math.max(0,Math.min(K1.satir-1,Math.floor((d-K1.d0)/ROW_D))), y=K1.taban+0.5+r*ROW_H+0.03;
+    const [x,z]=merdivenNokta(o.seg,o.k,d), [x2,z2]=merdivenNokta(o.seg,o.k,d+1), ix=x-x2, iz=z-z2; // içeri (sahaya doğru)
+    const yon=dur?Math.atan2(ix,iz):(yukari?Math.atan2(-ix,-iz):Math.atan2(ix,iz));
+    KISI.koy(o,{x,y,z,yon,ad:ts*7+o.f,adim:dur?0:1}); }
+  // biçme aracı: sahada 3 m'lik şeritler, uçta U dönüşü
+  { const W=3, NS=Math.floor((PL-6)/W), HZ=PW/2-3, SPD=1.6, U=Math.PI*W/2/SPD, RUN=2*HZ/SPD, per=RUN+U, top=NS*per, tt=(ts*1)%top, n=Math.floor(tt/per), u=tt-n*per, yonZ=n%2?-1:1, x0=-PL/2+3+n*W;
+    let x,z,yon; if(u<RUN){ x=x0; z=yonZ*(-HZ+u*SPD); yon=yonZ>0?0:Math.PI; } else { const a=(u-RUN)/U*Math.PI; x=x0+W*(1-Math.cos(a))/2; z=yonZ*(HZ+Math.sin(a)*1.4); yon=Math.atan2(W*Math.sin(a)/2, yonZ*Math.cos(a)*1.4); }
+    bicme.position.set(x,0,z); bicme.rotation.y=yon;
+    const ox=Math.sin(yon)*-0.35*1.15, oz=Math.cos(yon)*-0.35*1.15; KISI.koy(surucu,{x:x+ox,y:0.12,z:z+oz,yon,ad:0,adim:0,otur:1,kolOn:1}); }
+  // çizgi boyacısı: güney taç çizgisi boyunca gidip gelir
+  { const L=PL-4, SPD=1.1, per=2*L/SPD, u=(ts%per)/per, ileri=u<0.5, f=ileri?u*2:2-u*2, x=-L/2+L*f, z=PW/2+0.2, yon=ileri?Math.PI/2:-Math.PI/2;
+    boyaArabasi.position.set(x+(ileri?0.9:-0.9),0,z); boyaArabasi.rotation.y=yon; KISI.koy(boyaci,{x,y:0,z,yon,ad:ts*6,adim:0.6,kolOn:1}); }
+  KISI.bitir();
 }
 
 await yukle(0.85,'Taraftarlar yerleşiyor…');
@@ -1098,6 +1195,7 @@ function girisGoster(){ if(url.get('giris')==='0') return; girisFormu(); girisEl
 modBtn('ipucu').innerHTML=MOBIL?'<b>1 parmak</b> döndür · <b>2 parmak</b> yakınlaş/kaydır · <b>▲▼</b> yukarı-aşağı · <b>çift dokun</b> oraya uç':'<b>Sürükle</b> döndür · <b>Tekerlek</b> imlece yakınlaş · <b>WASD</b> gez · <b>Q/E</b> dön · <b>Boşluk/C</b> yukarı-aşağı · <b>Sağ tık</b> kaydır · <b>Çift tık</b> oraya uç';
 setTimeout(()=>modBtn('ipucu').classList.add('kapali'),MOBIL?7000:12000);
 function adim(t){
+  kisilerAdim(t); taraftarLOD();
   isikSovuAdim(t); girisYuruyus(t); tusHareket(t);
   if(ucusVeri){const k=Math.min(1,(t-ucusVeri.t0)/ucusVeri.dur), e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
     ctl.target.lerpVectors(ucusVeri.ft,ucusVeri.tt,e); cam.position.lerpVectors(ucusVeri.fc,ucusVeri.tc,e); cam.position.y+=Math.sin(Math.PI*e)*(ucusVeri.kavis||0); ctl.enabled=false; if(k>=1){ucusVeri=null; ctl.enabled=true;}}
@@ -1117,7 +1215,7 @@ function adim(t){
     if(f<26){ if(++dusuk>=3){ if(BLOOM){BLOOM=false;} else if(PR>1){PR=1; renderer.setPixelRatio(1); boyut();} dusuk=0; } } else dusuk=0;}
 }
 renderer.setAnimationLoop(adim);
-window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.target.toArray().map(v=>+v.toFixed(1))}),dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.position.sub(ctl.target).setLength(ctl.maxDistance).add(ctl.target);},yakin:()=>{ctl.target.set(0,8,45); cam.position.set(60,95,170); ctl.update();},sec:(q)=>{document.getElementById('q').value=q; document.getElementById('git').click();},hizli:()=>{if(ucusVeri) ucusVeri.dur=1;},secK:(i,uc=true)=>sec(i,uc), koltukP:()=>secili?koltuklar[sira[secili.i]].p.toArray():null,
+window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.target.toArray().map(v=>+v.toFixed(1))}),dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.position.sub(ctl.target).setLength(ctl.maxDistance).add(ctl.target);},yakin:()=>{ctl.target.set(0,8,45); cam.position.set(60,95,170); ctl.update();},sec:(q)=>{document.getElementById('q').value=q; document.getElementById('git').click();},hizli:()=>{if(ucusVeri) ucusVeri.dur=1;},secK:(i,uc=true)=>sec(i,uc), bicmeP:()=>bicme.position.toArray(), koltukP:()=>secili?koltuklar[sira[secili.i]].p.toArray():null,
   dol:k=>{insanMesh.count=kafaMesh.count=Math.max(0,Math.min(N,k));},
   tek:i=>{const m=new THREE.Matrix4(),m2=new THREE.Matrix4(); for(const im of [insanMesh,kafaMesh]){ im.getMatrixAt(i,m); im.getMatrixAt(0,m2); im.setMatrixAt(0,m); im.setMatrixAt(i,m2); im.instanceMatrix.needsUpdate=true; } const c=new THREE.Color(),c2=new THREE.Color(); insanMesh.getColorAt(i,c); insanMesh.getColorAt(0,c2); insanMesh.setColorAt(0,c); insanMesh.setColorAt(i,c2); insanMesh.instanceColor.needsUpdate=true;},
   ekran:()=>{ if(!secili) return null; const v2=secili.p.clone().project(cam); return [(v2.x+1)/2,(1-v2.y)/2,v2.z]; },
@@ -1129,7 +1227,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 12 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 13 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
