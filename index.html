@@ -93,7 +93,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 9</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 10</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -164,7 +164,7 @@ const ACILIS_T0=performance.now();
 async function yukle(oran,yazi){const b=document.getElementById('yukBar'); if(b) b.style.width=Math.round(oran*100)+'%'; const y=document.getElementById('yukYazi'); if(y&&yazi) y.textContent=yazi; await new Promise(r=>setTimeout(r,0));}
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=9;
+const SURUM=10;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch('takipciler.json?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(window.__VERI) VERI=window.__VERI;
@@ -561,9 +561,9 @@ await yukle(0.65,'Mahalle kuruluyor…');
   for(let k=0;k<260;k++){ if(r()<.5){const x=yolX[(r()*yolX.length)|0]+(r()<.5?-1.8:1.8), z=(r()-.5)*ADA*2*SINIR; if(plazaIci(x,z))continue; arabalar.push([x,z,Math.PI/2]);}
     else {const z=yolZ[(r()*yolZ.length)|0]+(r()<.5?-1.8:1.8), x=(r()-.5)*ADA*2*SINIR; if(plazaIci(x,z))continue; arabalar.push([x,z,0]);}}
   // otopark: güney meydanı (stat ile yol arası)
-  const op=new THREE.Mesh(new THREE.PlaneGeometry(170,30),M('#23252c')); op.rotation.x=-Math.PI/2; op.position.set(35,0.015,127); scene.add(op);
+  const op=new THREE.Mesh(new THREE.PlaneGeometry(170,30),M('#23252c')); op.rotation.x=-Math.PI/2; op.position.set(35,0.015,130); scene.add(op);
   {const cizgi=new THREE.InstancedMesh(new THREE.PlaneGeometry(0.15,4.6),cizM,280); let n=0;
-   for(const zr of [117.5,124,130.5,137]) for(let x=-48;x<=118;x+=2.7){ if(n>=280)break; tmp.rotation.set(-Math.PI/2,0,0); tmp.scale.setScalar(1); tmp.position.set(x,0.02,zr); tmp.updateMatrix(); cizgi.setMatrixAt(n++,tmp.matrix);
+   for(const zr of [120.5,127,133.5,140]) for(let x=-48;x<=118;x+=2.7){ if(n>=280)break; tmp.rotation.set(-Math.PI/2,0,0); tmp.scale.setScalar(1); tmp.position.set(x,0.02,zr); tmp.updateMatrix(); cizgi.setMatrixAt(n++,tmp.matrix);
      if(r()<.82 && x<117) arabalar.push([x+1.35,zr,Math.PI/2]);}
    cizgi.count=n; scene.add(cizgi);}
   {const gov=new THREE.InstancedMesh(new THREE.BoxGeometry(4.2,1.1,1.9),M('#ffffff'),arabalar.length), ust2=new THREE.InstancedMesh(new THREE.BoxGeometry(2.3,0.75,1.7),M('#20242e'),arabalar.length);
@@ -572,13 +572,47 @@ await yukle(0.65,'Mahalle kuruluyor…');
    scene.add(gov,ust2);}
 }
 // projektör direkleri
-for(const [x,z] of [[-138,-115],[138,-115],[-138,115],[138,115]]){
+for(const [x,z] of []){
   const d=new THREE.Mesh(new THREE.CylinderGeometry(0.6,1.1,72,6),M('#2a2f40')); d.position.set(x,36,z); scene.add(d);
   const b=new THREE.Mesh(new THREE.BoxGeometry(9,5,1),new THREE.MeshBasicMaterial({color:'#fff4d0'})); b.position.set(x,73,z); b.lookAt(0,0,0); scene.add(b);
 }
+// ================== DIŞ KABUK: yuvarlatılmış gövde, içten ışıklı eşkenar dörtgen şişkin paneller ==================
+const KABUK=(()=>{ const d=KAT[2].d0+KAT[2].satir*ROW_D+1.6, X=HALKA.X0+d, Z=HALKA.Z0+d, c=HALKA.C0+d*(2-Math.SQRT2), n=4;
+  const uc=[[X,Z-c],[X-c,Z]]; let k=1; const f=k=>Math.max(...uc.map(([x,z])=>Math.pow(x/(k*(X+1)),n)+Math.pow(z/(k*(Z+1)),n))); while(f(k)>1) k+=0.002;
+  return {A:k*(X+1), B:k*(Z+1), n, H:KAT[2].taban+0.5+(KAT[2].satir-1)*ROW_H+7.3}; })();
+let kabukMat=null, kabukMesh=null, kabukBoya=()=>{};
+{ const {A,B,n,H}=KABUK;
+  // panel dokusu: ortada bir eşkenar dörtgen + köşelerde dörtte birler → yan yana dizilince kesintisiz ızgara; yastık gibi ortası parlak, dikişler koyu
+  const W=128, Hh=192, cv=document.createElement('canvas'); cv.width=W; cv.height=Hh; const x=cv.getContext('2d'), im=x.createImageData(W,Hh);
+  for(let j=0;j<Hh;j++) for(let i=0;i<W;i++){ const u=(i+.5)/W*2-1, v=(j+.5)/Hh*2-1, d1=Math.abs(u)+Math.abs(v), t=d1<1?d1:2-d1;
+    let b=1-0.62*t*t; b+= (d1<1? -(u+v):(u+v)>0?-0.5:0.5)*0.04; if(Math.abs(d1-1)<0.045) b=0.16; else if(Math.abs(d1-1)<0.09) b*=0.6;
+    const o=(j*W+i)*4; im.data[o]=im.data[o+1]=im.data[o+2]=Math.max(0,Math.min(255,b*255)); im.data[o+3]=255; }
+  x.putImageData(im,0,0); const tex=new THREE.CanvasTexture(cv); tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=8;
+  // dikey kesit: tabanda dik, ortada dışa doğru şişer, üstte içe kıvrılıp çatıya döner
+  const prof=new THREE.SplineCurve([[1.0,0],[1.004,5],[1.018,12],[1.034,20],[1.036,26],[1.026,H-6],[1.0,H-1.2],[0.972,H+1.4],[0.935,H+2.2],[0.895,H+1.3]].map(([s,y])=>new THREE.Vector2(s,y)));
+  const PN=34, prf=prof.getSpacedPoints(PN-1), cevre=[], CN=420;
+  for(let i=0;i<=CN;i++){ const a=i/CN*Math.PI*2, ca=Math.cos(a), sa=Math.sin(a); cevre.push([A*Math.sign(ca)*Math.pow(Math.abs(ca),2/n), B*Math.sign(sa)*Math.pow(Math.abs(sa),2/n)]); }
+  const uzun=[0]; for(let i=1;i<=CN;i++) uzun.push(uzun[i-1]+Math.hypot(cevre[i][0]-cevre[i-1][0],cevre[i][1]-cevre[i-1][1]));
+  const yay=[0]; for(let j=1;j<PN;j++) yay.push(yay[j-1]+Math.hypot((prf[j].x-prf[j-1].x)*A,prf[j].y-prf[j-1].y));
+  const UREP=Math.round(uzun[CN]/7.2), VREP=8.6/1; // panel ~7,2 m eninde
+  const pos=[], uv=[], col=[], idx=[], kirmizi=new THREE.Color('#ff2b2b'), beyaz=new THREE.Color('#c9ced8');
+  for(let i=0;i<=CN;i++) for(let j=0;j<PN;j++){ const sc=prf[j].x; pos.push(cevre[i][0]*sc,prf[j].y,cevre[i][1]*sc); uv.push(uzun[i]/uzun[CN]*UREP, yay[j]/VREP);
+    const cati=THREE.MathUtils.smoothstep(prf[j].y,H-0.5,H+1.6)*(prf[j].x<1.0?1:0); const cc=kirmizi.clone().lerp(beyaz,cati); col.push(cc.r,cc.g,cc.b); }
+  for(let i=0;i<CN;i++) for(let j=0;j<PN-1;j++){ const a=i*PN+j, b=(i+1)*PN+j; idx.push(a,b,a+1, b,b+1,a+1); }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3)); g.setIndex(idx);
+  kabukMat=new THREE.MeshBasicMaterial({map:tex,vertexColors:true,side:THREE.DoubleSide});
+  kabukMesh=new THREE.Mesh(g,kabukMat); scene.add(kabukMesh);
+  const catiPay=[]; for(let i=0;i<=CN;i++) for(let j=0;j<PN;j++) catiPay.push(THREE.MathUtils.smoothstep(prf[j].y,H-0.5,H+1.6)*(prf[j].x<1.0?1:0));
+  const _c=new THREE.Color(); kabukBoya=(renk)=>{ const ca=g.attributes.color; for(let q=0;q<catiPay.length;q++){ _c.copy(renk).lerp(beyaz,catiPay[q]); ca.setXYZ(q,_c.r,_c.g,_c.b);} ca.needsUpdate=true; };
+  // taban: koyu beton kaide + kabuk dibinde ince ışık çizgisi
+  const kaide=[]; for(let i=0;i<=CN;i++){ kaide.push(new THREE.Vector2(cevre[i][0]*1.012,cevre[i][1]*1.012)); }
+  const ks=new THREE.Shape(kaide.map(v=>new THREE.Vector2(v.x*1.03,v.y*1.03))); ks.holes.push(new THREE.Path(kaide));
+  const kg=new THREE.ExtrudeGeometry(ks,{depth:0.6,bevelEnabled:false,curveSegments:1}); kg.rotateX(-Math.PI/2);
+  scene.add(new THREE.Mesh(kg,M('#3a3e48')));
+}
 // ================== STAT GİRİŞİ (güney cephe): camlı hol, saçak, turnikeler, gişeler, yürüyen taraftarlar ==================
 const girisYurUyen={};
-{ const zF=HALKA.Z0+KAT[2].d0+KAT[2].satir*ROW_D+1.6, G=new THREE.Group(), T=toplayici();
+{ const zF=KABUK.B-0.3, G=new THREE.Group(), T=toplayici();
   const k=(w,h,d,mat,x,y,z)=>T.ekle(KUTU(w,h,d),mat,yerM(x,y,z));
   // döşeme (meydan taşı)
   const doseme=new THREE.Mesh(new THREE.PlaneGeometry(70,16),M('#4a4e58')); doseme.rotation.x=-Math.PI/2; doseme.position.set(0,0.02,zF+8); G.add(doseme);
@@ -727,7 +761,7 @@ const ray=new THREE.Raycaster(); let basla=null;
 canvas.addEventListener('pointerdown',e=>basla=[e.clientX,e.clientY]);
 let sonDokunus=0;
 function odakla(cx,cy){ const m2=new THREE.Vector2(cx/innerWidth*2-1,-(cy/innerHeight)*2+1); ray.setFromCamera(m2,cam);
-  const hit=ray.intersectObjects([...tribunGrup,saha,zemin],true)[0]; if(!hit) return;
+  const hit=ray.intersectObjects([...tribunGrup,saha,zemin,kabukMesh],true)[0]; if(!hit) return;
   const p=hit.point.clone(), yon=cam.position.clone().sub(ctl.target).normalize(), uz=THREE.MathUtils.clamp(cam.position.distanceTo(ctl.target)*0.45,18,420);
   const poz=p.clone().addScaledVector(yon,uz); poz.y=Math.max(p.y+6,p.y+yon.y*uz); ucusGit(p,poz,900); }
 canvas.addEventListener('dblclick',e=>odakla(e.clientX,e.clientY));
@@ -918,7 +952,7 @@ function sovBaslat(){ sovBas=performance.now(); telefonKur(); sovGrup.visible=tr
   const hemi=scene.children.find(o=>o.isHemisphereLight); sovKayit={hemi,hI:hemi?hemi.intensity:1,aI:ay.intensity,pI:projektor.intensity,bloom:bloom.strength};
   modBtn('mIsik').textContent='⏹ Şovu bitir'; if(sesAcik) tezahurat(); }
 function sovBitir(){ if(!sovKayit) return; sovGrup.visible=false; const k=sovKayit; if(k.hemi) k.hemi.intensity=k.hI; ay.intensity=k.aI; projektor.intensity=k.pI; bloom.strength=k.bloom;
-  lambaMat.color.copy(lambaRenk); serritMat.color.copy(serritRenk); sovKayit=null; modBtn('mIsik').textContent='✨ Işık Şovu'; }
+  lambaMat.color.copy(lambaRenk); serritMat.color.copy(serritRenk); kabukBoya(new THREE.Color('#ff2b2b')); sovKayit=null; modBtn('mIsik').textContent='✨ Işık Şovu'; }
 const lambaRenk=lambaMat.color.clone(), serritRenk=serritMat.color.clone();
 modBtn('mIsik').onclick=()=>{ sovKayit?sovBitir():sovBaslat(); };
 function isikSovuAdim(t){
@@ -1015,7 +1049,9 @@ function girisGoster(){ if(url.get('giris')==='0') return; girisFormu(); girisEl
 
 modBtn('ipucu').innerHTML=MOBIL?'<b>1 parmak</b> döndür · <b>2 parmak</b> yakınlaş/kaydır · <b>▲▼</b> yukarı-aşağı · <b>çift dokun</b> oraya uç':'<b>Sürükle</b> döndür · <b>Tekerlek</b> imlece yakınlaş · <b>WASD</b> gez · <b>Q/E</b> dön · <b>Boşluk/C</b> yukarı-aşağı · <b>Sağ tık</b> kaydır · <b>Çift tık</b> oraya uç';
 setTimeout(()=>modBtn('ipucu').classList.add('kapali'),MOBIL?7000:12000);
+let _kabukT=0; const _kr=new THREE.Color();
 function adim(t){
+  if(sovKayit && t-_kabukT>90){ _kabukT=t; const f=((t-sovBas)/1000); const ren=['#ff2b2b','#ffffff','#2b6bff','#ff2b2b'][Math.floor(f/1.6)%4]; _kr.set(ren).multiplyScalar(0.55+0.45*Math.abs(Math.sin(f*3))); kabukBoya(_kr); }
   isikSovuAdim(t); girisYuruyus(t); tusHareket(t);
   if(ucusVeri){const k=Math.min(1,(t-ucusVeri.t0)/ucusVeri.dur), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
     ctl.target.lerpVectors(ucusVeri.ft,ucusVeri.tt,e); cam.position.lerpVectors(ucusVeri.fc,ucusVeri.tc,e); ctl.enabled=false; if(k>=1){ucusVeri=null; ctl.enabled=true;}}
@@ -1035,11 +1071,11 @@ function adim(t){
     if(f<26){ if(++dusuk>=3){ if(BLOOM){BLOOM=false;} else if(PR>1){PR=1; renderer.setPixelRatio(1); boyut();} dusuk=0; } } else dusuk=0;}
 }
 renderer.setAnimationLoop(adim);
-window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.target.toArray().map(v=>+v.toFixed(1))}),dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.position.sub(ctl.target).setLength(ctl.maxDistance).add(ctl.target);},yakin:()=>{ctl.target.set(0,8,45); cam.position.set(60,95,170); ctl.update();},sec:(q)=>{document.getElementById('q').value=q; document.getElementById('git').click();},hizli:()=>{if(ucusVeri) ucusVeri.dur=1;},secK:i=>sec(i),uzaklas:k=>{cam.position.sub(ctl.target).multiplyScalar(k).add(ctl.target);}};
+window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.target.toArray().map(v=>+v.toFixed(1))}),dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.position.sub(ctl.target).setLength(ctl.maxDistance).add(ctl.target);},yakin:()=>{ctl.target.set(0,8,45); cam.position.set(60,95,170); ctl.update();},sec:(q)=>{document.getElementById('q').value=q; document.getElementById('git').click();},hizli:()=>{if(ucusVeri) ucusVeri.dur=1;},secK:i=>sec(i),kamYap:(c,t)=>{cam.position.set(...c); ctl.target.set(...t); ctl.update();},uzaklas:k=>{cam.position.sub(ctl.target).multiplyScalar(k).add(ctl.target);}};
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 9 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 10 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
