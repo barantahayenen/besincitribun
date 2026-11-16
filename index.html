@@ -91,7 +91,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 4</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 5</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -232,8 +232,9 @@ function yerlestir(t,u,d,y){
     case 'N': return new THREE.Vector3(-u, y, -hz-d);
   }}
 const rotY={W:Math.PI/2,E:-Math.PI/2,S:0,N:Math.PI};
-const betonM=M('#3a4566'), betonK=M('#2a3350'), cati=M('#16181D'), turM=M('#D7262E');
+const betonM=M('#3a4566'), betonK=M('#2a3350'), cati=M('#8d93a0'), turM=M('#D7262E');
 const tribunGrup=[];
+const dikmeGeo=new THREE.BoxGeometry(0.45,1,0.7), dikmeMat=M('#b9bec8');
 const lambaGeo=new THREE.BoxGeometry(0.9,0.5,0.9), lambaMat=new THREE.MeshBasicMaterial({color:'#fff6d8'}), serritMat=new THREE.MeshBasicMaterial({color:'#ff3b3b'});
 const tmp=new THREE.Object3D(), col=new THREE.Color();
 const koltuklar=[]; // {p, t, r, no}
@@ -262,16 +263,22 @@ function parcaKur(t){
     const d=K.d0+r*ROW_D, y=K.taban+0.5+r*ROW_H;
     const [a,b]=segUclar(t.seg,d+ROW_D/2); kutuKoy(g,a,b,0,y,ROW_D,r%2?betonM:betonK);
     const [a2,b2]=segUclar(t.seg,d+ROW_D*0.45), L=Math.hypot(b2[0]-a2[0],b2[1]-a2[1]), n=Math.floor((L-1)/SEAT_W), bos=(L-n*SEAT_W)/2;
-    for(let i=0;i<n;i++){const f=(bos+(i+0.5)*SEAT_W)/L; koltuklar.push({p:new THREE.Vector3(a2[0]+(b2[0]-a2[0])*f,y+0.25,a2[1]+(b2[1]-a2[1])*f),t,r:r+1,no:i+1});}
+    let no=0; for(let i=0;i<n;i++){ if(i%31===15) continue; no++; const f=(bos+(i+0.5)*SEAT_W)/L; koltuklar.push({p:new THREE.Vector3(a2[0]+(b2[0]-a2[0])*f,y+0.25,a2[1]+(b2[1]-a2[1])*f),t,r:r+1,no,blok:Math.floor((i+16)/31)});}
     ySon=y;
   }
   const dSon=K.d0+K.satir*ROW_D;
   {const [a,b]=segUclar(t.seg,dSon+0.6); kutuKoy(g,a,b,0,ySon+3,1.2,betonK,1.2);} // arka duvar
+  {// cephe dikmeleri (tek çizim): 3,2 m arayla açık gri dikey kirişler
+   const [a,b]=segUclar(t.seg,dSon+1.35), L=Math.hypot(b[0]-a[0],b[1]-a[1]), n=Math.max(2,Math.floor(L/3.2)), Hd=(t.kat===2?ySon+7.3:ySon+3);
+   const ry=Math.atan2(-(b[1]-a[1]),b[0]-a[0]); const im=new THREE.InstancedMesh(dikmeGeo,dikmeMat,n+1);
+   for(let i=0;i<=n;i++){const f=i/n; tmp.position.set(a[0]+(b[0]-a[0])*f,Hd/2,a[1]+(b[1]-a[1])*f); tmp.rotation.set(0,ry,0); tmp.scale.set(1,Hd,1); tmp.updateMatrix(); im.setMatrixAt(i,tmp.matrix);}
+   g.add(im);
+   const [c,e]=segUclar(t.seg,dSon+1.5); kutuKoy(g,c,e,Hd-0.9,Hd-0.5,0.15,serritMat,1.2); }
   // uç duvarları (sekizgenin köşe açıortayı boyunca)
   for(const uc of [0,1]){const p0=segUclar(t.seg,K.d0)[uc], p1=segUclar(t.seg,dSon+1.2)[uc];
     const w=kutuKoy(g,p0,p1,0,ySon+3,0.8,betonK,0); ucDuvarlar.push({m:w,t,uc});}
   if(t.kat===2){
-    const dd=(dSon-K.d0)*0.4;
+    const dd=(dSon-K.d0)*0.47;
     {const [a,b]=segUclar(t.seg,dSon-dd/2); kutuKoy(g,a,b,ySon+6.7,ySon+7.3,dd,cati,1.5);}
     {const [a,b]=segUclar(t.seg,dSon-dd); kutuKoy(g,a,b,ySon+6.55,ySon+7.05,0.5,turM,1.5);}
     // localar: üst katın ön yüzünde yanan camlar + turuncu bant
@@ -282,7 +289,7 @@ function parcaKur(t){
     {const [a,b]=segUclar(t.seg,K.d0-0.1); kutuKoy(g,a,b,K.taban+0.05,K.taban+0.55,0.3,turM,0);}
   }
   // ışıklar: üst katta çatı ön kenarı boyunca lambalar, alt katta arka duvar üstünde; dış cephede turuncu şerit
-  {const dL=t.kat===2?dSon-(dSon-K.d0)*0.4-0.3:dSon+0.6, yL=t.kat===2?ySon+6.4:ySon+3.25, ara=t.kat===2?2.6:3.5;
+  {const dL=t.kat===2?dSon-(dSon-K.d0)*0.47-0.3:dSon+0.6, yL=t.kat===2?ySon+6.4:ySon+3.25, ara=t.kat===2?2.6:3.5;
    const [a,b]=segUclar(t.seg,dL), L=Math.hypot(b[0]-a[0],b[1]-a[1]), n=Math.max(1,Math.floor(L/ara));
    const im=new THREE.InstancedMesh(lambaGeo,lambaMat,n);
    for(let i=0;i<n;i++){const f=(i+0.5)/n; tmp.position.set(a[0]+(b[0]-a[0])*f,yL,a[1]+(b[1]-a[1])*f); tmp.rotation.set(0,0,0); tmp.scale.setScalar(1); tmp.updateMatrix(); im.setMatrixAt(i,tmp.matrix);}
@@ -412,7 +419,7 @@ const koltukMesh=new THREE.InstancedMesh(kutu,new THREE.MeshLambertMaterial(),N)
 const insanMesh=new THREE.InstancedMesh(govde,new THREE.MeshLambertMaterial(),N);
 const kafaMesh=new THREE.InstancedMesh(kafa,new THREE.MeshLambertMaterial(),N);
 const TEN=['#e0b08a','#c98f63','#a8714a','#f0c8a0','#8a5a3a'];
-const FORMA=['#D7262E','#F4F1EA','#16181D','#FF4D4D','#FFF8EE','#D7332B','#F2C14E'];
+const FORMA=['#D7262E','#D7262E','#F4F1EA','#16181D','#D7262E','#ffffff','#b81d24','#D7262E','#16181D','#F4F1EA'];
 let kapasite=0, sira=[]; // sira[k] = koltuklar indeksi
 const depo={al(k){try{return localStorage.getItem(k)}catch(e){return null}}, koy(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
 let BEN=depo.al('bt_ben'); let benIdx=-1;
@@ -429,7 +436,7 @@ function kur(){
   for(let k=0;k<N;k++){ // koltuklar
     const v=ACIK.includes(koltuklar[k].t.id);
     tmp.position.copy(koltuklar[k].p); tmp.rotation.set(0,0,0); tmp.scale.setScalar(v?1:0); tmp.updateMatrix();
-    koltukMesh.setMatrixAt(k,tmp.matrix); koltukMesh.setColorAt(k,col.set(koltuklar[k].t.kombine||koltuklar[k].t.loca?'#F2C14E':'#D7262E'));
+    koltukMesh.setMatrixAt(k,tmp.matrix); koltukMesh.setColorAt(k,col.set(koltuklar[k].t.kombine||koltuklar[k].t.loca?'#F2C14E':((koltuklar[k].blok||0)%2?'#a3161d':'#c81f27')));
   }
   for(let i=0;i<N;i++){ // oturan taraftarlar
     const dolu=i<Math.min(kapasite,TARAFTAR.length);
@@ -546,6 +553,15 @@ for(const [x,z] of [[-138,-115],[138,-115],[-138,115],[138,115]]){
   const d=new THREE.Mesh(new THREE.CylinderGeometry(0.6,1.1,72,6),M('#2a2f40')); d.position.set(x,36,z); scene.add(d);
   const b=new THREE.Mesh(new THREE.BoxGeometry(9,5,1),new THREE.MeshBasicMaterial({color:'#fff4d0'})); b.position.set(x,73,z); b.lookAt(0,0,0); scene.add(b);
 }
+// köşe bayrakları + yedek kulübeleri
+{ const direk=new THREE.CylinderGeometry(0.04,0.04,1.6,5), bayrak=new THREE.PlaneGeometry(0.6,0.4);
+  for(const sx of [-1,1]) for(const sz of [-1,1]){ const d=new THREE.Mesh(direk,M('#ffffff')); d.position.set(sx*PL/2,0.8,sz*PW/2); scene.add(d);
+    const b=new THREE.Mesh(bayrak,new THREE.MeshBasicMaterial({color:'#D7262E',side:THREE.DoubleSide})); b.position.set(sx*PL/2+0.3,1.4,sz*PW/2); scene.add(b);}
+  for(const sx of [-1,1]){ const k=new THREE.Group();
+    const govde=new THREE.Mesh(new THREE.BoxGeometry(9,2.2,2),M('#20232b')); govde.position.y=1.1; k.add(govde);
+    const cam=new THREE.Mesh(new THREE.BoxGeometry(9.2,1.4,0.1),new THREE.MeshLambertMaterial({color:'#9fb6c8',transparent:true,opacity:.45})); cam.position.set(0,1.6,-1.0); k.add(cam);
+    const serit=new THREE.Mesh(new THREE.BoxGeometry(9.2,0.15,2.1),M('#D7262E')); serit.position.y=2.25; k.add(serit);
+    k.position.set(sx*9,0,PW/2+3.2); scene.add(k);} }
 // sahadaki oyuncular
 {
   let s=3; const r=()=>(s=(s*16807)%2147483647)/2147483647;
@@ -792,7 +808,7 @@ const huzmeAlfa=gradTex('#ffffff','#141414',false), lekeTex=gradTex('rgba(255,25
 const huzmeGeo=new THREE.ConeGeometry(3.2,1,28,1,true); huzmeGeo.translate(0,-0.5,0);
 const lekeGeo=new THREE.CircleGeometry(5,32); lekeGeo.rotateX(-Math.PI/2);
 const huzmeler=[];
-{const dR=KAT[2].d0+34*ROW_D-(34*ROW_D)*0.4-0.5, yR=KAT[2].taban+0.5+33*ROW_H+6.6; let i=0;
+{const dR=KAT[2].d0+34*ROW_D-(34*ROW_D)*0.47-0.5, yR=KAT[2].taban+0.5+33*ROW_H+6.6; let i=0;
  for(const seg of ['E','SE','S','SW','W','NW','N','NE']) for(const f of [0.2,0.5,0.8]){
   const [a,b]=segUclar(seg,dR); const kaynak=new THREE.Vector3(a[0]+(b[0]-a[0])*f,yR,a[1]+(b[1]-a[1])*f);
   const renk=new THREE.Color(i%3===1?'#ff2b2b':'#ffffff');
@@ -909,7 +925,7 @@ window.__test={dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.positi
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 4 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 5 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
