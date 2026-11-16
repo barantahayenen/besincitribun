@@ -689,7 +689,7 @@ const girisYurUyen={};
   { const cv=document.createElement('canvas'); cv.width=2048; cv.height=320; const x=cv.getContext('2d'); const tx=new THREE.CanvasTexture(cv); tx.colorSpace=THREE.SRGBColorSpace; tx.anisotropy=8;
     const tb=new THREE.Mesh(new THREE.PlaneGeometry(W+8,(W+8)*320/2048),new THREE.MeshBasicMaterial({map:tx,transparent:true,toneMapped:false,color:'#c8c8c8'})); tb.position.set(0,H+0.6+(W+8)*160/2048,zF+D+3.25); G.add(tb);
     window.STAD_TABELA={ ciz(ad){ x.clearRect(0,0,2048,320); tb.visible=!!ad; if(!ad) return;
-      const yazi=(ad.toLocaleUpperCase('tr-TR').endsWith('STADYUMU')?ad.toLocaleUpperCase('tr-TR'):ad.toLocaleUpperCase('tr-TR')+' STADYUMU');
+      const B=ad.trim().toLocaleUpperCase('tr-TR'), so=B.split(/\s+/).pop(); const yazi=['STADYUMU','STADI','STATI'].includes(so)?B:(['STADYUM','STAD','STAT'].includes(so)?B.replace(/\s*\S+$/,'')+' STADYUMU':B+' STADYUMU');
       let fs=210; x.font=`900 ${fs}px system-ui`; while(x.measureText(yazi).width>1900&&fs>60){fs-=6; x.font=`900 ${fs}px system-ui`;}
       const tw=Math.min(2030,x.measureText(yazi).width+120); x.fillStyle='rgba(12,13,16,0.92)'; x.beginPath(); x.roundRect(1024-tw/2,18,tw,284,26); x.fill(); x.lineWidth=10; x.strokeStyle='#D7262E'; x.stroke();
       x.textAlign='center'; x.textBaseline='middle'; x.fillStyle='#ffffff'; x.fillText(yazi,1024,166); tx.needsUpdate=true; } };
