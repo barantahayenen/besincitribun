@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<script>if(/github\.io$/.test(location.hostname)) location.replace('https://besincitribun.pages.dev/'+location.search+location.hash);</script>
+<script>if(/github\.io$/.test(location.hostname)) location.replace('https://besincitribun.pages.dev/'+location.pathname.replace(/^\/besincitribun\/?/,'')+location.search+location.hash);</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>5. Tribün</title>
@@ -79,7 +79,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
 <body>
 <canvas id="c"></canvas>
 <div class="ust">
-  <div class="kart sayac"><img src="logo.png" alt="5. Tribün" style="width:44px;height:44px;border-radius:50%;border:2px solid #D7262E;align-self:center"><b id="dolu">0</b><span id="kap">/ 10.000 koltuk</span><span style="flex-basis:100%"><i class="canli"></i><span id="tar">0</span> taraftar · Takip et → koltuğuna otur</span></div>
+  <div class="kart sayac"><img src="logo.png" alt="5. Tribün" style="width:44px;height:44px;border-radius:50%;border:2px solid #D7262E;align-self:center"><b id="dolu">0</b><span id="kap">/ 10.000 koltuk</span><span style="flex-basis:100%"><i class="canli"></i><span id="tar">0</span> taraftar · <span id="platCta">Takip et</span> → koltuğuna otur</span></div>
   <div class="kart ara"><button id="benimBtn" style="display:none;padding:10px 10px" title="Benim koltuğum">⭐</button><input id="q" placeholder="@kullanıcı adını ara" autocomplete="off" autocapitalize="off" spellcheck="false"><button id="git">Bul</button><button id="giydirBtn" title="Taraftarını giydir">👕</button><button id="bilgiBtn" title="Bilgi" style="background:var(--lac);color:var(--krem);border:1px solid var(--tur)">i</button></div>
   <div class="kart bilgi" id="bilgi"></div>
 </div>
@@ -96,7 +96,7 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
   <h4>AKSESUAR</h4><div class="secenek" id="s_aks"></div>
   <div class="btnler"><button id="dolapKapat">Tamam</button><button class="ikincil" id="benDegil">Bu ben değilim</button></div>
 </div>
-<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 16</div>
+<div id="surum" style="position:fixed;right:22px;top:20px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none;z-index:6">5T sürüm 17</div>
 <div id="fps" style="position:fixed;right:8px;bottom:62px;font:700 11px system-ui;color:#9fb2e6;opacity:.8;pointer-events:none"></div>
 <div class="giris" id="giris"><div class="kutu" id="girisKutu"></div></div>
 <div class="iguyari" id="iguyari"><button id="iguKapat">Tamam</button>Instagram'ın içinde açtın. Daha akıcı ve <b>Story'de paylaş</b> için sağ üstteki <b>⋯</b> → <b>Tarayıcıda aç</b>.</div>
@@ -165,11 +165,16 @@ function denemeVeri(n){
 const KALDIRILAN=new Set([]);
 const ACILIS_T0=performance.now();
 async function yukle(oran,yazi){const b=document.getElementById('yukBar'); if(b) b.style.width=Math.round(oran*100)+'%'; const y=document.getElementById('yukYazi'); if(y&&yazi) y.textContent=yazi; await new Promise(r=>setTimeout(r,0));}
+// PLATFORM: adres yolundan (/tiktok, /youtube; yoksa Instagram). Her platformun kendi takipçi listesi ve kararları var.
+const PLAT=(()=>{ const p=location.pathname.toLowerCase();
+  if(/\/tiktok(\/|$)/.test(p)) return {kod:'tiktok',ad:'TikTok',adDa:"TikTok'ta",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'takip eden',sira:'takip',link:'https://www.tiktok.com/@besincitribun',veri:'takipciler_tiktok.json',ek:'_tiktok'};
+  if(/\/youtube(\/|$)/.test(p)) return {kod:'youtube',ad:'YouTube',adDa:"YouTube'da",FIIL:'ABONE OL',Fiil:'Abone ol',cta:"@besincitribun'a abone ol",eden:'abone olan',sira:'abone olma',link:'https://www.youtube.com/@besincitribun',veri:'takipciler_youtube.json',ek:'_youtube'};
+  return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=16;
+const SURUM=17;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
-try{const r=await fetch('takipciler.json?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
+try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(window.__VERI) VERI=window.__VERI;
 const TARAFTAR = (url.get('demo')==='1'?denemeVeri(+(url.get('n')||25000)):VERI.isimler).filter(u=>!KALDIRILAN.has(String(u).toLowerCase()));
 
@@ -491,7 +496,7 @@ const TEN=['#e0b08a','#c98f63','#a8714a','#f0c8a0','#8a5a3a'];
 const FORMA=['#D7262E','#D7262E','#F4F1EA','#16181D','#D7262E','#ffffff','#b81d24','#D7262E','#16181D','#F4F1EA'];
 let kapasite=0, sira=[]; // sira[k] = koltuklar indeksi
 const depo={al(k){try{return localStorage.getItem(k)}catch(e){return null}}, koy(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
-let BEN=depo.al('bt_ben'); let benIdx=-1;
+let BEN=depo.al('bt_ben'+PLAT.ek); document.getElementById('platCta').textContent=PLAT.Fiil+(PLAT.kod!=='instagram'?' ('+PLAT.ad+' tribünü)':''); let benIdx=-1;
 function benIdxBul(){benIdx=BEN?TARAFTAR.indexOf(BEN):-1;}
 function kur(){
   TRIBUNLER.forEach(t=>{t.grup.visible=ACIK.includes(t.id); if(t.insaat) t.insaat.visible=INSAAT.includes(t.id)&&!ACIK.includes(t.id);});
@@ -877,7 +882,7 @@ function ara(){
   const q=document.getElementById('q').value.trim().replace(/^@/,'').toLowerCase(); if(!q)return;
   let i=TARAFTAR.findIndex(u=>u.toLowerCase()===q);
   if(i<0) i=TARAFTAR.findIndex(u=>u.toLowerCase().startsWith(q));
-  if(i<0){bilgi.innerHTML=`@${q} henüz tribünde yok. @besincitribun'u takip et, bir sonraki güncellemede koltuğun gelsin.`;bilgi.classList.add('ac');return;}
+  if(i<0){bilgi.innerHTML=`@${q} henüz tribünde yok. ${PLAT.cta}, bir sonraki güncellemede koltuğun gelsin.`;bilgi.classList.add('ac');return;}
   if(i>=kapasite){isaret.visible=halka.visible=false;et.style.display='none';secili=null;
     bilgi.innerHTML=`<b>@${TARAFTAR[i]}</b> · ${fmt(i+1)}. taraftar<br>Stat dolu! Sıradasın: yeni tribün açılınca ilk oturanlardan biri sensin.`;bilgi.classList.add('ac');return;}
   document.getElementById('q').blur(); sec(i);
@@ -963,11 +968,11 @@ function dolapAc(){
     ctl.minDistance=2; ucusGit(p.clone().add(new THREE.Vector3(0,0.12,0)), p.clone().add(yon.multiplyScalar(7)).add(new THREE.Vector3(0,1.8,0)),1500); kusBtn.style.display='block';}
 }
 document.getElementById('dolapKapat').onclick=()=>document.getElementById('dolap').classList.remove('ac');
-document.getElementById('benDegil').onclick=()=>{BEN=null; depo.koy('bt_ben',null); benIdxBul(); kur(); document.getElementById('dolap').classList.remove('ac');};
+document.getElementById('benDegil').onclick=()=>{BEN=null; depo.koy('bt_ben'+PLAT.ek,null); benIdxBul(); kur(); document.getElementById('dolap').classList.remove('ac');};
 document.getElementById('benimBtn').onclick=()=>{if(benIdx<0)return; if(benIdx<kapasite) sec(benIdx); else {bilgi.innerHTML=`<b>@${BEN}</b> · Sıradasın: yeni tribün açılınca koltuğun gelecek.`; bilgi.classList.add('ac');}};
 avatarKur(); benIdxBul();
 document.getElementById('bilgiBtn').onclick=()=>{secimiKapat();
-  bilgi.innerHTML=`<b>🏟️ 5. Tribün</b><br>Burası senin tribünün. Instagram'da <b>@besincitribun</b>'u takip eden herkese bir koltuk. Koltuk sırası takip sırasına göre; liste düzenli güncellenir.
+  bilgi.innerHTML=`<b>🏟️ 5. Tribün</b><br>Burası senin tribünün. ${PLAT.adDa} <b>@besincitribun</b> hesabını ${PLAT.eden} herkese bir koltuk. Koltuk sırası ${PLAT.sira} sırasına göre; liste düzenli güncellenir.
   <div style="margin-top:8px;font-size:13px;opacity:.9"><b>Gizlilik:</b> Sitede yalnızca Instagram kullanıcı adı durur; fotoğraf ya da başka bilgi yok. Kıyafet seçimin sadece bu telefonda saklanır.</div>
   <div class="btnler"><button class="ikincil" onclick="this.closest('.bilgi').classList.remove('ac')">Kapat</button></div>`;
   bilgi.classList.add('ac');};
@@ -979,8 +984,8 @@ document.getElementById('giydirBtn').onclick=()=>{
     <div style="font-size:12px;opacity:.75;margin-top:6px">Deneme için örnek: upown41</div>`;
   bilgi.classList.add('ac');
   const tamam=()=>{const q=document.getElementById('benAd').value.trim().replace(/^@/,'').toLowerCase(); const i=TARAFTAR.findIndex(u=>u.toLowerCase()===q);
-    if(i<0){bilgi.querySelector('div:last-child').textContent=`@${q} listede yok. @besincitribun'u takip et, koltuğun gelsin.`; return;}
-    BEN=TARAFTAR[i]; depo.koy('bt_ben',BEN); benIdxBul(); kur(); document.getElementById('benAd').blur();
+    if(i<0){bilgi.querySelector('div:last-child').textContent=`@${q} listede yok. ${PLAT.cta}, koltuğun gelsin.`; return;}
+    BEN=TARAFTAR[i]; depo.koy('bt_ben'+PLAT.ek,BEN); benIdxBul(); kur(); document.getElementById('benAd').blur();
     if(i<kapasite) dolapAc(); else {bilgi.innerHTML=`<b>@${BEN}</b> · Stat dolu, sıradasın: yeni tribün açılınca koltuğun ve giydirme açılır.`;}};
   document.getElementById('benTamam').onclick=tamam; document.getElementById('benAd').addEventListener('keydown',e=>{if(e.key==='Enter')tamam();});
 };
@@ -1020,7 +1025,7 @@ function isimleriCiz(){
 document.getElementById('tar').textContent=fmt(TARAFTAR.length);
 // Son gelenler: tek tek değişen satır (uzun kayan yazı telefonda kayboluyordu)
 let sonListe=[], sonI=0, sonZaman=null;
-function sonGoster(){ const el=document.getElementById('son'); if(!sonListe.length){ el.textContent="İlk taraftar sen ol: @besincitribun'u takip et, koltuğuna otur"; return; }
+function sonGoster(){ const el=document.getElementById('son'); if(!sonListe.length){ el.textContent='İlk taraftar sen ol: '+PLAT.cta+', koltuğuna otur'; return; }
   el.classList.add('gecis'); setTimeout(()=>{ el.textContent=sonListe[sonI%sonListe.length]; sonI++; el.classList.remove('gecis'); },350); }
 function sonGelenler(){const n=Math.min(kapasite,TARAFTAR.length); sonListe=[]; for(let i=n-1;i>=Math.max(0,n-15);i--){const k=sira[i]; sonListe.push('@'+TARAFTAR[i]+' → '+koltukYeri(k)+' · '+koltuklar[k].r+'. sıra '+koltuklar[k].no);}
  sonI=0; sonGoster(); if(!sonZaman) sonZaman=setInterval(sonGoster,2600);}
@@ -1054,7 +1059,7 @@ function modSec(id){['mStad','mMah'].forEach(x=>modBtn(x).classList.toggle('sec'
 modBtn('mStad').onclick=()=>{secimiKapat(); ctl.minDistance=4;  kusBtn.style.display='none'; modSec('mStad'); ucusGit(new THREE.Vector3(0,0,8),new THREE.Vector3(90,300,285),2400,40);};
 modBtn('mMah').onclick=()=>{secimiKapat(); ctl.minDistance=4;  kusBtn.style.display='none'; modSec('mMah'); ucusGit(new THREE.Vector3(0,0,0),new THREE.Vector3(-300,330,330),3200,60);};
 modBtn('mLoca').onclick=()=>{secimiKapat(); modSec(''); kusBtn.style.display='block'; ctl.minDistance=2; const zOn=-(HALKA.Z0+26*ROW_D+1.3), yZ=0.5+25*ROW_H+3.05; ucusGit(new THREE.Vector3(0,-2,14),new THREE.Vector3(0,yZ+2.4,zOn+1.6),2800,25);};
-modBtn('mRast').onclick=()=>{const n=Math.min(kapasite,TARAFTAR.length); if(!n){bilgi.innerHTML="Tribün henüz boş. İlk taraftar sen ol: <b>@besincitribun</b>'u takip et!"; bilgi.classList.add('ac'); return;} modSec(''); sec((Math.random()*n)|0);};
+modBtn('mRast').onclick=()=>{const n=Math.min(kapasite,TARAFTAR.length); if(!n){bilgi.innerHTML="Tribün henüz boş. İlk taraftar sen ol: <b>"+PLAT.cta+"</b>!"; bilgi.classList.add('ac'); return;} modSec(''); sec((Math.random()*n)|0);};
 // IŞIK ŞOVU v2: stat karanlığa gömülür, çatı halkasından 24 huzme sahayı tarar, sahada ışık lekeleri,
 // tribünde telefon ışıkları; final: kırmızı-beyaz flaş. İkinci dokunuş şovu bitirir.
 const SOV_SURE=15000;
@@ -1157,7 +1162,7 @@ const EKRAN=(()=>{ const W=1024,H=416, cv=document.createElement('canvas'); cv.w
       x.fillStyle='#262a33'; x.fillRect(132,318,760,26); x.fillStyle=KIR; x.fillRect(132,318,Math.max(6,760*d/Math.max(1,kapasite)),26); }
     else if(sahne===2){ const sa=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'});
       ort('TSİ',100,'800 44px system-ui',ALT); ort(sa,214,'900 170px system-ui','#ffffff'); ort('5. TRİBÜN',330,'900 46px system-ui',KIR); }
-    else { ort('TAKİP ET',112,'900 82px system-ui','#ffffff'); ort('KOLTUĞUNA OTUR',212,'900 82px system-ui',KIR); ort('İLK 1.000 KİŞİ LOCADA ★',320,'800 44px system-ui',ALT); }
+    else { ort(PLAT.FIIL,112,'900 82px system-ui','#ffffff'); ort('KOLTUĞUNA OTUR',212,'900 82px system-ui',KIR); ort('İLK 1.000 KİŞİ LOCADA ★',320,'800 44px system-ui',ALT); }
     tex.needsUpdate=true; }
   let son=-1e9; return { adim(t){ const sik=sovAcik?120:1000; if(t-son>=sik){ son=t; ciz(t); } } };
 })();
@@ -1203,20 +1208,20 @@ function tusHareket(t){ const dt=Math.min(0.05,(t-(_sonT||t))/1000); _sonT=t; if
   cam.position.copy(ctl.target).add(_o2); }
 /* ================== GİRİŞ: BİLETİNİ AL ================== */
 const girisEl=modBtn('giris'), girisKutu=modBtn('girisKutu');
-const IG='https://www.instagram.com/besincitribun/';
+const IG=PLAT.link;
 function girisFormu(not=''){
-  const eski=(()=>{try{return localStorage.getItem('bt_ben')||''}catch(e){return ''}})();
+  const eski=(()=>{try{return localStorage.getItem('bt_ben'+PLAT.ek)||''}catch(e){return ''}})();
   girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>5. TRİBÜN</h1><p>Burası senin tribünün. Biletini al, koltuğuna otur.</p>
     <input id="gAd" placeholder="@instagram kullanıcı adın" autocapitalize="off" autocomplete="off" spellcheck="false" value="${eski?'@'+eski:''}">
     <button class="ana" id="gAl">🎟️ BİLETİMİ AL</button><div class="not" id="gNot">${not}</div>
     <button class="ince" id="gMisafir">Misafir olarak stadı gez</button>`;
   const al=()=>{const q=modBtn('gAd').value.trim().replace(/^@/,'').toLowerCase(); if(!q){modBtn('gNot').textContent='Kullanıcı adını yaz.'; return;}
     const i=TARAFTAR.findIndex(u=>String(u).toLowerCase()===q);
-    if(i<0){ girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>HENÜZ BİLETİN YOK</h1><p><b>@${q}</b> listede görünmüyor.<br>Instagram'da <b>@besincitribun</b>'u takip et; liste güncellenince koltuğun hazır.</p>
-        <a href="${IG}" target="_blank" rel="noopener"><button class="ana">📲 @besincitribun'u takip et</button></a>
+    if(i<0){ girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>HENÜZ BİLETİN YOK</h1><p><b>@${q}</b> listede görünmüyor.<br>${PLAT.adDa} <b>${PLAT.cta}</b>; liste güncellenince koltuğun hazır.</p>
+        <a href="${IG}" target="_blank" rel="noopener"><button class="ana">📲 ${PLAT.cta}</button></a>
         <button class="ince" id="gTekrar">Başka bir ad dene</button><br><button class="ince" id="gMisafir2">Misafir olarak stadı gez</button>`;
       modBtn('gTekrar').onclick=()=>girisFormu(); modBtn('gMisafir2').onclick=girisKapat; return; }
-    try{localStorage.setItem('bt_ben',TARAFTAR[i]);}catch(e){} BEN=TARAFTAR[i]; benIdxBul(); kur();
+    try{localStorage.setItem('bt_ben'+PLAT.ek,TARAFTAR[i]);}catch(e){} BEN=TARAFTAR[i]; benIdxBul(); kur();
     if(i>=kapasite){ girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>STAT DOLU</h1><p><b>@${TARAFTAR[i]}</b>, ${fmt(i+1)}. taraftarsın. Yeni tribün açılınca ilk oturanlardan biri sensin.</p><button class="ana" id="gGez">Stadı gez</button>`; modBtn('gGez').onclick=girisKapat; return; }
     const k=sira[i], t=koltuklar[k].t;
     girisKutu.innerHTML=`<div class="bilet"><div class="sol"><img src="logo.png" alt=""><b>5. TRİBÜN</b></div><div class="sag">
@@ -1269,7 +1274,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
 girisGoster();
-const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 16 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
+const ACILIS_SN=((performance.now()-ACILIS_T0)/1000).toFixed(1); const _sr=document.getElementById('surum'); if(_sr) _sr.textContent='5T sürüm 17 · '+(VERI.guncelleme?('liste '+new Date(VERI.guncelleme).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+' · '):'')+'açılış '+ACILIS_SN.replace('.',',')+' sn';
 window.__hazir=true;
 </script>
 </body>
