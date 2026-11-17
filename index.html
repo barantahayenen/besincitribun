@@ -1314,7 +1314,7 @@ function adim(t){
 renderer.setAnimationLoop(adim);
 window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.target.toArray().map(v=>+v.toFixed(1))}),dur:()=>renderer.setAnimationLoop(null),adim,uzak:()=>{cam.position.sub(ctl.target).setLength(ctl.maxDistance).add(ctl.target);},yakin:()=>{ctl.target.set(0,8,45); cam.position.set(60,95,170); ctl.update();},sec:(q)=>{document.getElementById('q').value=q; document.getElementById('git').click();},hizli:()=>{if(ucusVeri) ucusVeri.dur=1;},secK:(i,uc=true)=>sec(i,uc),
   stadAdi:a=>{a=a||null; if(KARAR.stadAdi===a) return; KARAR.stadAdi=a; STAD_TABELA.ciz(a);}, ekranSahne:n=>{ if(window.__ekranS===n) return; window.__ekranS=n; EKRAN.sahne(n); },
-  isimEtiket:(m,R)=>{ const cp=cam.position, d=Math.min(kapasite,TARAFTAR.length), l=[]; for(let i=0;i<d;i++){const p=koltuklar[sira[i]].p; const dd=p.distanceTo(cp); if(dd<R) l.push([dd,i]);}
+  isimEtiket:(m,R)=>{ const cp=cam.position, d=Math.min(kapasite,TARAFTAR.length,insanMesh.count), l=[]; for(let i=0;i<d;i++){const p=koltuklar[sira[i]].p; const dd=p.distanceTo(cp); if(dd<R) l.push([dd,i]);}
     l.sort((a,b)=>a[0]-b[0]); const out=[]; for(const [dd,i] of l){ if(out.length>=m) break; const v=koltuklar[sira[i]].p.clone(); v.y+=1.3; v.project(cam); if(v.z>1||Math.abs(v.x)>0.92||Math.abs(v.y)>0.9) continue;
       const sx=(v.x+1)/2, sy=(1-v.y)/2; if(out.some(o=>Math.abs(o[1]-sx)<0.17&&Math.abs(o[2]-sy)<0.03)) continue; out.push(['@'+TARAFTAR[i],sx,sy]); } return out; },
   koltukIzle:i=>koltuktanIzle(sira[i]), kapasite:()=>kapasite, taraftarSay:()=>TARAFTAR.length, bicmeP:()=>bicme.position.toArray(), koltukP:()=>secili?koltuklar[sira[secili.i]].p.toArray():null,
