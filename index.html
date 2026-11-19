@@ -107,17 +107,22 @@ html,body{margin:0;height:100%;background:#0b1020;overflow:hidden;font-family:sy
 </div>
 <div class="yukleniyor" id="yuk"><div style="text-align:center"><div id="yukYazi">Stat kuruluyor…</div><div style="width:220px;height:8px;background:#16181D;border-radius:6px;margin-top:12px;overflow:hidden"><div id="yukBar" style="height:100%;width:3%;background:#D7262E;transition:width .2s"></div></div></div></div>
 
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+<script>
+// Eski tarayıcı uyumu + hata mesajı (modül yüklenemese bile çalışır). three.js artık kendi sunucumuzda (lib/three-paket.js), import map yok.
+if(window.CanvasRenderingContext2D&&!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(+r||0,w/2,h/2);this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);this.closePath();return this;};}
+(function(){ var gosterildi=false, ua=navigator.userAgent, ig=/Instagram|FBAN|FBAV|TikTok|musical_ly|BytedanceWebview/i.test(ua);
+  function mesaj(neden){ if(gosterildi||window.__hazir) return; gosterildi=true; var y=document.getElementById('yukYazi'); if(!y) return;
+    y.innerHTML='<b>Stat bu tarayıcıda açılamadı.</b><br><span style="font-size:13px;opacity:.85">'+(ig?'Sağ üstteki <b>•••</b> menüsünden <b>“Tarayıcıda aç”</b>ı seç (Safari / Chrome).':'Tarayıcını güncelle ya da Chrome / Safari ile aç.')+'<br>Telefonun eskiyse bilgisayardan da açabilirsin.</span>'+(neden?'<br><span style="font-size:10px;opacity:.5">'+String(neden).slice(0,120)+'</span>':''); }
+  window.__stadHata=mesaj;
+  window.addEventListener('error',function(e){ mesaj(e&&e.message); });
+  window.addEventListener('unhandledrejection',function(e){ mesaj(e&&e.reason&&(e.reason.message||e.reason)); });
+  try{ var c=document.createElement('canvas'); if(!(c.getContext('webgl2')||c.getContext('webgl'))) setTimeout(function(){mesaj('WebGL yok');},0); }catch(e){}
+  setTimeout(function(){ if(!window.__hazir){ var y=document.getElementById('yukYazi'); if(y&&!gosterildi) y.insertAdjacentHTML('beforeend','<div style="font-size:12px;opacity:.8;margin-top:10px">Uzun sürüyorsa: '+(ig?'••• → “Tarayıcıda aç”':'sayfayı yenile')+'</div>'); } },25000);
+})();
 </script>
 <script type="module">
-import * as THREE from 'three';
-import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
-import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
-import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
-import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
-import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
+import * as THREE from './lib/three-paket.js';
+import {OrbitControls,EffectComposer,RenderPass,UnrealBloomPass,OutputPass,mergeGeometries} from './lib/three-paket.js';
 
 /* ================== AYARLAR ==================
    Her tribün 2 katlı; her kat ayrı açılıp kapanır. Yayındaki hal tek liste: ACIK (açılış sırasıyla).
@@ -172,7 +177,7 @@ const PLAT=(()=>{ const pq=new URLSearchParams(location.search).get('plat'); con
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'hesabını takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=25;
+const SURUM=26;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(url.get('n_gercek')) VERI.isimler=VERI.isimler.slice(0,+url.get('n_gercek')); // video: belirli bir andaki tribün
