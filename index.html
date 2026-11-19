@@ -172,7 +172,7 @@ const PLAT=(()=>{ const pq=new URLSearchParams(location.search).get('plat'); con
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'hesabını takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=24;
+const SURUM=25;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(url.get('n_gercek')) VERI.isimler=VERI.isimler.slice(0,+url.get('n_gercek')); // video: belirli bir andaki tribün
@@ -974,6 +974,37 @@ function koltuktanIzle(k){
   et.style.display='none'; secili=null; isaret.visible=false;
 }
 kusBtn.onclick=()=>{ctl.minDistance=4; ucusGit(new THREE.Vector3(0,0,8),new THREE.Vector3(90,300,285),2400,40); kusBtn.style.display='none';};
+
+/* ================== KAMERA ÇARPIŞMASI: kamera tribünün, duvarın, çatının içine girmez (ekran kararmaz) ==================
+   Basit hacim modeli: sekizgen halka uzaklığı d (iç kenar 0) ve dış kabuğun süperelips oranı r ile "bu nokta dolu mu?".
+   Tribüne doğru giderse koltukların üstünden kayarak yükselir; kabuk/duvar/çatıya çarparsa durur; uçuşlar engelin üstünden geçer. */
+const CARP=(()=>{ const d1=26*ROW_D, d2=KAT[2].d0, dS=KAT[2].d0+KAT[2].satir*ROW_D, yUst=KAT[2].taban+0.5+(KAT[2].satir-1)*ROW_H, PAY=0.6;
+  const yMax=d1*ROW_H/ROW_D+0.5;
+  const halkaD=(x,z)=>{ const ax=Math.abs(x), az=Math.abs(z); return Math.max(ax-HALKA.X0, az-HALKA.Z0, (ax+az-(HALKA.X0+HALKA.Z0-HALKA.C0))/Math.SQRT2); };
+  const kabukR=(x,z)=>Math.pow(Math.pow(Math.abs(x)/KABUK.A,4)+Math.pow(Math.abs(z)/KABUK.B,4),0.25);
+  function zemin(x,z){ // o noktada kameranın inebileceği en düşük yükseklik
+    const d=halkaD(x,z), r=kabukR(x,z);
+    if(r>1.05) return 1.0;                                   // stat dışı
+    if(r>0.985) return KABUK.H+2.5;                          // dış kabuk duvarı
+    if(d<0) return 1.2;                                      // saha
+    if(d<d1) return 0.5+d*ROW_H/ROW_D+PAY;                   // alt kat basamakları
+    if(d<d2) return yMax+PAY;                                // koridor / loca önü
+    if(d<dS) return KAT[2].taban+0.5+(d-d2)*ROW_H/ROW_D+PAY; // üst kat basamakları
+    return yUst+PAY+1; }                                     // en üst sıranın arkası
+  const cati=(x,y,z)=>{ const d=halkaD(x,z); return d>dS-(dS-d2)*0.47-0.5 && d<dS+1 && y>yUst+6.2 && y<yUst+7.8; };
+  const dolu=(v)=>v.y<zemin(v.x,v.z)||cati(v.x,v.y,v.z);
+  const son=new THREE.Vector3(90,300,285), a=new THREE.Vector3(), b=new THREE.Vector3();
+  function uygula(ucusta){
+    const c=cam.position;
+    if(!dolu(c)){ let gecti=false;                          // tek karede duvarın öbür yanına atlamasın: yol üstünde dolu nokta var mı?
+      if(!ucusta && son.distanceToSquared(c)>4) for(let i=1;i<10&&!gecti;i++){ a.copy(son).lerp(c,i/10); if(a.y<zemin(a.x,a.z)-2.5||cati(a.x,a.y,a.z)) gecti=true; }
+      if(!gecti){ son.copy(c); return; } }
+    const z=zemin(c.x,c.z), yuksel=z-c.y;
+    if(ucusta || (yuksel<=2.5 && !cati(c.x,z,c.z))){ c.y=Math.max(c.y,z); if(cati(c.x,c.y,c.z)) c.y=yUst+7.9; }  // üstünden kay
+    else { a.copy(son); b.copy(c); for(let i=0;i<14;i++){ const m=a.clone().lerp(b,0.5); if(dolu(m)) b.copy(m); else a.copy(m); } c.copy(a); }  // engelin önünde dur
+    cam.lookAt(ctl.target); son.copy(c); }
+  return {uygula,dolu,zemin};
+})();
 let ucusVeri=null;
 function ucus(p){
   const hedef=p.clone(); const yon=cam.position.clone().sub(ctl.target).normalize();
@@ -1357,6 +1388,7 @@ function adim(t){
     ctl.target.lerpVectors(ucusVeri.ft,ucusVeri.tt,e); cam.position.lerpVectors(ucusVeri.fc,ucusVeri.tc,e); cam.position.y+=Math.sin(Math.PI*e)*(ucusVeri.kavis||0); cam.lookAt(ctl.target); ctl.enabled=false; if(k>=1){ucusVeri=null; ctl.enabled=true; ctl.update();}}
   else ctl.update();
   if(ctl.target.y<0) ctl.target.y=0; if(cam.position.y<1.5) cam.position.y=1.5;
+  if(!window.__carpmaYok) CARP.uygula(!!ucusVeri);
   if(secili){ halka.scale.setScalar(1+0.25*Math.sin(t/180));
     { const a=Math.min(1,Math.max(0,(t-isikT0)/600)), n=0.85+0.15*Math.sin(t/260), uz=cam.position.distanceTo(secili.p);
       const f=THREE.MathUtils.clamp((uz-6)/50,0.18,1); // yakında sönük (koltuk görünsün), uzakta parlak (yeri belli olsun)
@@ -1378,6 +1410,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
   armaGoster:v=>{window.__armaGizli=!v; ARMA.m.visible=v&&armaHazir; const n=window.__ekranS; window.__ekranS=-1; __test.ekranSahne(n===undefined?null:n);},
   ilk11:a=>{ if(a===null) ILK11.goster(false); else { ILK11.ciz(a); ILK11.goster(true); } }, aracP:()=>[ARAC.amb.position.toArray(),ARAC.itf.position.toArray()],
   aracGoster:v=>{ARAC.amb.visible=ARAC.itf.visible=v;},
+  carpDolu:(x,y,z)=>CARP.dolu(new THREE.Vector3(x,y,z)), carpZemin:(x,z)=>CARP.zemin(x,z),
   siradaki:a=>{KARAR.siradaki=a; const n=window.__ekranS; window.__ekranS=-1; __test.ekranSahne(n===undefined?null:n);},
   tribunSay:id=>{let n=0; for(const k of koltuklar) if(k.t.id===id) n++; return n;},
   stadAdi:a=>{a=a||null; if(KARAR.stadAdi===a) return; KARAR.stadAdi=a; STAD_TABELA.ciz(a);}, ekranSahne:n=>{ if(window.__ekranS===n) return; window.__ekranS=n; EKRAN.sahne(n); },
@@ -1391,7 +1424,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
   sovT:t=>{sovBaslat(); sovBas=t;}, sovDur:()=>{sovBitir(); sovSifirla();},
   koltukBul:(tid,r,no)=>{for(let i=0;i<sira.length;i++){const k=koltuklar[sira[i]]; if(k.t.id===tid&&k.r===r&&k.no===no) return i;} return -1;},
   koltukOrta:(tid,r)=>{const l=[]; for(let i=0;i<sira.length;i++){const k=koltuklar[sira[i]]; if(k.t.id===tid&&k.r===r) l.push(i);} return l[Math.floor(l.length*0.42)]??-1;},
-  isikT:t=>{isikT0=t;}, serbest:()=>{ctl.maxPolarAngle=Math.PI; ctl.minDistance=0.1; ctl.maxDistance=5000; ctl.enableDamping=false;},
+  isikT:t=>{isikT0=t;}, serbest:()=>{window.__carpmaYok=true; ctl.maxPolarAngle=Math.PI; ctl.minDistance=0.1; ctl.maxDistance=5000; ctl.enableDamping=false;},
   isaretGizle:()=>{secili=null; isaret.visible=halka.visible=false; et.style.display='none'; bilgi.classList.remove('ac');},kamYap:(c,t)=>{cam.position.set(...c); ctl.target.set(...t); ctl.update();},uzaklas:k=>{cam.position.sub(ctl.target).multiplyScalar(k).add(ctl.target);}};
 await yukle(1,'Hazır');
 document.getElementById('yuk').remove();
