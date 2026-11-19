@@ -1,7 +1,10 @@
 {
  "instagram": {
   "stadAdi": "Kızıl Arena",
-  "takimAdi": "Kızıltepe FK"
+  "takimAdi": "Kızıltepe FK",
+  "arma": "arma.jpg",
+  "ilk11": [],
+  "siradaki": "İLK 11"
  },
  "tiktok": {
   "stadAdi": "Allianz Red Arena",
@@ -9,6 +12,6 @@
  },
  "youtube": {
   "stadAdi": "İstanbul Rodos Arena Kompleksi",
-  "takimAdi": null
+  "takimAdi": "İstanbul Rodos FK"
  }
 }
