@@ -3,15 +3,32 @@
   "stadAdi": "Kızıl Arena",
   "takimAdi": "Kızıltepe FK",
   "arma": "arma.jpg",
-  "ilk11": [],
-  "siradaki": "İLK 11"
+  "ilk11": [
+   "ersancetinerr3",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "zazaoktay2163",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "siradaki": "İLK 11",
+  "hedef": 4000
  },
  "tiktok": {
   "stadAdi": "Allianz Red Arena",
-  "takimAdi": null
+  "takimAdi": "Şanlı Kartallar FK",
+  "siradaki": "ARMA"
  },
  "youtube": {
   "stadAdi": "İstanbul Rodos Arena Kompleksi",
-  "takimAdi": "İstanbul Rodos FK"
+  "takimAdi": "İstanbul Rodos FK",
+  "arma": "arma_youtube.jpg",
+  "ilk11": [],
+  "siradaki": "İLK 11"
  }
 }

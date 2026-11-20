@@ -177,7 +177,7 @@ const PLAT=(()=>{ const pq=new URLSearchParams(location.search).get('plat'); con
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'hesabını takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=27;
+const SURUM=28;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(url.get('n_gercek')) VERI.isimler=VERI.isimler.slice(0,+url.get('n_gercek')); // video: belirli bir andaki tribün
@@ -817,11 +817,11 @@ const ILK11=(()=>{ const POZ=[[-47,0],[-37,-21],[-38,-7],[-38,7],[-37,21],[-26,-
   const liste=POZ.map(([x,z],i)=>KISI.ekle({forma:i?'#7a1424':'#f2c14e', kol:i?'#7a1424':'#f2c14e', pant:i?'#f4f1ea':'#16181d', ten:TEN[(i*3)%5], x, z, no:i+1, gizli:true}));
   for(const o of liste){ const c=document.createElement('canvas'); c.width=320; c.height=96; const t=new THREE.CanvasTexture(c); t.colorSpace=THREE.SRGBColorSpace;
     const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,toneMapped:false})); sp.scale.set(3.6,1.08,1); sp.position.set(o.x,3.0,o.z); sp.visible=false; scene.add(sp); o.sp=sp; o.cv=c; o.tex=t; }
-  function ciz(adlar){ liste.forEach((o,i)=>{ const x=o.cv.getContext('2d'), ad=(adlar&&adlar[i])||'???'; x.clearRect(0,0,320,96);
+  function ciz(adlar){ liste.forEach((o,i)=>{ const x=o.cv.getContext('2d'), dolu=!!(adlar&&adlar[i]), ad=dolu?'@'+adlar[i]:'???'; x.clearRect(0,0,320,96);
     x.fillStyle='rgba(14,15,18,0.88)'; x.beginPath(); x.roundRect(4,8,312,80,20); x.fill(); x.strokeStyle='#7a1424'; x.lineWidth=5; x.stroke();
     x.textBaseline='middle'; x.textAlign='left'; x.fillStyle='#f2c14e'; x.font='900 40px system-ui'; x.fillText(String(o.no),22,50);
     let fs=38; x.font=`800 ${fs}px system-ui`; while(x.measureText(ad).width>220&&fs>18){fs-=2; x.font=`800 ${fs}px system-ui`;}
-    x.fillStyle='#f4f1ea'; x.fillText(ad,80,50); o.tex.needsUpdate=true; }); }
+    x.fillStyle=dolu?'#f2c14e':'#f4f1ea'; x.fillText(ad,80,50); if(dolu){ x.strokeStyle='#f2c14e'; x.lineWidth=5; x.beginPath(); x.roundRect(4,8,312,80,20); x.stroke(); } o.tex.needsUpdate=true; }); }
   function goster(v){ for(const o of liste){ o.gizli=!v; o.sp.visible=v; } }
   return {liste,ciz,goster};
 })();
@@ -1299,10 +1299,15 @@ const EKRAN=(()=>{ const W=1024,H=416, cv=document.createElement('canvas'); cv.w
         let fs=130; x.font=`900 ${fs}px system-ui`; while(x.measureText(tk).width>gen&&fs>40){fs-=4; x.font=`900 ${fs}px system-ui`;}
         if(ar){ x.save(); x.beginPath(); x.arc(185,208,158,0,7); x.clip(); x.drawImage(ARMA_IMG,185-181,208-181,362,362); x.restore(); }
         const ortX=(t,y,f,c)=>{x.font=f; x.fillStyle=c; x.textAlign='center'; x.textBaseline='middle'; x.fillText(t,cx,y);};
-        ortX((KARAR.stadAdi||'').toLocaleUpperCase('tr-TR'),84,'800 42px system-ui',ALT); ortX(tk,194,`900 ${fs}px system-ui`,'#ffffff'); ortX('SIRADAKİ KARAR: '+(KARAR.siradaki||'ARMA'),318,'800 42px system-ui',KREM); }
+        { const sa=(KARAR.stadAdi||'').toLocaleUpperCase('tr-TR'); let f2=42; x.font=`800 ${f2}px system-ui`; while(x.measureText(sa).width>gen&&f2>22){f2-=2; x.font=`800 ${f2}px system-ui`;} ortX(sa,84,`800 ${f2}px system-ui`,ALT); } ortX(tk,194,`900 ${fs}px system-ui`,'#ffffff'); ortX('SIRADAKİ KARAR: '+(KARAR.siradaki||'ARMA'),318,'800 42px system-ui',KREM); }
       else if(KARAR.stadAdi){ const a=KARAR.stadAdi.toLocaleUpperCase('tr-TR'); let fs=110; x.font=`900 ${fs}px system-ui`; while(x.measureText(a).width>940&&fs>40){fs-=4; x.font=`900 ${fs}px system-ui`;}
         ort(a,150,`900 ${fs}px system-ui`,'#ffffff'); ort('SIRADAKİ KARAR',262,'800 44px system-ui',ALT); ort(KARAR.takimAdi?KARAR.takimAdi.toLocaleUpperCase('tr-TR'):'TAKIMIN ADI ???',330,'900 50px system-ui',KREM); }
       else { ort('STADYUMUN ADI',118,'900 64px system-ui',KREM); ort('? ? ?',222,'900 120px system-ui',ALT); ort('YORUMLARA YAZ · EN ÇOK BEĞENİ KAZANIR',330,'800 38px system-ui',KREM); } }
+    else if(sahne===1&&KARAR.hedef){ const h=KARAR.hedef, hs=fmt(h);   // dönüm noktası: X. koltuk kimin?
+      if(d<h){ ort(hs+'. KOLTUK KİMİN?',92,'800 46px system-ui',ALT); ort('@SEN?',196,'900 130px system-ui','#ffffff'); ort(fmt(d)+' / '+hs,276,'800 40px system-ui',KREM);
+        x.fillStyle='#262a33'; x.fillRect(132,318,760,26); x.fillStyle=ALT; x.fillRect(132,318,Math.max(6,760*d/h),26); }
+      else { const ad='@'+TARAFTAR[h-1]; let fs=120; x.font=`900 ${fs}px system-ui`; while(x.measureText(ad).width>960&&fs>40){fs-=4; x.font=`900 ${fs}px system-ui`;}
+        ort(hs+'. TARAFTAR',92,'800 46px system-ui',ALT); ort(ad,196,`900 ${fs}px system-ui`,'#ffffff'); ort('HOŞ GELDİN ★',300,'800 44px system-ui',KREM); } }
     else if(sahne===1){ ort('TRİBÜNDE',92,'800 46px system-ui',KREM); ort(fmt(d),196,'900 130px system-ui','#ffffff'); ort('/ '+fmt(kapasite)+' KOLTUK',276,'800 40px system-ui',ALT);
       x.fillStyle='#262a33'; x.fillRect(132,318,760,26); x.fillStyle=KIR; x.fillRect(132,318,Math.max(6,760*d/Math.max(1,kapasite)),26); }
     else if(sahne===2){ const sa=new Date().toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'});
@@ -1416,6 +1421,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
   ilk11:a=>{ if(a===null) ILK11.goster(false); else { ILK11.ciz(a); ILK11.goster(true); } }, aracP:()=>[ARAC.amb.position.toArray(),ARAC.itf.position.toArray()],
   aracGoster:v=>{ARAC.amb.visible=ARAC.itf.visible=v;},
   carpDolu:(x,y,z)=>CARP.dolu(new THREE.Vector3(x,y,z)), carpZemin:(x,z)=>CARP.zemin(x,z),
+  hedef:h=>{KARAR.hedef=h; const n=window.__ekranS; window.__ekranS=-1; __test.ekranSahne(n===undefined?null:n);},
   siradaki:a=>{KARAR.siradaki=a; const n=window.__ekranS; window.__ekranS=-1; __test.ekranSahne(n===undefined?null:n);},
   tribunSay:id=>{let n=0; for(const k of koltuklar) if(k.t.id===id) n++; return n;},
   stadAdi:a=>{a=a||null; if(KARAR.stadAdi===a) return; KARAR.stadAdi=a; STAD_TABELA.ciz(a);}, ekranSahne:n=>{ if(window.__ekranS===n) return; window.__ekranS=n; EKRAN.sahne(n); },
