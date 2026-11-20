@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<script>if(/github\.io$/.test(location.hostname)) location.replace('https://besincitribun.pages.dev/'+location.pathname.replace(/^\/besincitribun\/?/,'')+location.search+location.hash);</script>
+<!-- github.io → pages.dev yönlendirmesi kaldırıldı (20 Kas): pages.dev Türkiye'de bazı operatörlerde engelli; iki adres de çalışır -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>5. Tribün</title>
@@ -177,7 +177,7 @@ const PLAT=(()=>{ const pq=new URLSearchParams(location.search).get('plat'); con
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'hesabını takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=26;
+const SURUM=27;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(url.get('n_gercek')) VERI.isimler=VERI.isimler.slice(0,+url.get('n_gercek')); // video: belirli bir andaki tribün
