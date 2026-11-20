@@ -177,7 +177,7 @@ const PLAT=(()=>{ const pq=new URLSearchParams(location.search).get('plat'); con
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'hesabını takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=28;
+const SURUM=29;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(url.get('n_gercek')) VERI.isimler=VERI.isimler.slice(0,+url.get('n_gercek')); // video: belirli bir andaki tribün
@@ -1111,13 +1111,13 @@ document.getElementById('benimBtn').onclick=()=>{if(benIdx<0)return; if(benIdx<k
 avatarKur(); benIdxBul();
 document.getElementById('bilgiBtn').onclick=()=>{secimiKapat();
   bilgi.innerHTML=`<b>🏟️ 5. Tribün</b><br>Burası senin tribünün. ${PLAT.adDa} <b>@besincitribun</b> ${PLAT.eden} herkese bir koltuk. Koltuk sırası ${PLAT.sira} sırasına göre; liste düzenli güncellenir.
-  <div style="margin-top:8px;font-size:13px;opacity:.9"><b>Gizlilik:</b> Sitede yalnızca Instagram kullanıcı adı durur; fotoğraf ya da başka bilgi yok. Kıyafet seçimin sadece bu telefonda saklanır.</div>
+  <div style="margin-top:8px;font-size:13px;opacity:.9"><b>Gizlilik:</b> Sitede yalnızca ${PLAT.ad} kullanıcı adı durur; fotoğraf ya da başka bilgi yok. Kıyafet seçimin sadece bu telefonda saklanır.</div>
   <div class="btnler"><button class="ikincil" onclick="this.closest('.bilgi').classList.remove('ac')">Kapat</button></div>`;
   bilgi.classList.add('ac');};
 // 👕 düğmesi: kendini daha önce seçtiysen doğrudan dolap; seçmediysen adını sor
 document.getElementById('giydirBtn').onclick=()=>{
   if(benIdx>=0){ if(benIdx<kapasite) dolapAc(); else {bilgi.innerHTML=`<b>@${BEN}</b> · Sıradasın: yeni tribün açılınca koltuğun gelecek, giydirme o zaman açılır.`; bilgi.classList.add('ac');} return;}
-  bilgi.innerHTML=`<b>👕 Taraftarını giydir</b><br>Önce kendini bul: yorum yaptığın Instagram kullanıcı adını yaz.
+  bilgi.innerHTML=`<b>👕 Taraftarını giydir</b><br>Önce kendini bul: yorum yaptığın ${PLAT.ad} kullanıcı adını yaz.
     <div class="ara" style="display:flex;gap:6px;margin-top:8px"><input id="benAd" placeholder="@kullanıcı adın" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0;font:600 16px system-ui;padding:9px 10px;border-radius:9px;border:0;background:var(--krem);color:var(--ink)"><button id="benTamam" style="font:800 14px system-ui;padding:9px 12px;border-radius:9px;border:0;background:var(--tur);color:var(--ink)">Tamam</button></div>
     <div style="font-size:12px;opacity:.75;margin-top:6px">Deneme için örnek: upown41</div>`;
   bilgi.classList.add('ac');
@@ -1362,7 +1362,7 @@ const IG=PLAT.link;
 function girisFormu(not=''){
   const eski=(()=>{try{return localStorage.getItem('bt_ben'+PLAT.ek)||''}catch(e){return ''}})();
   girisKutu.innerHTML=`<img class="lg" src="logo.png" alt=""><h1>5. TRİBÜN</h1><p>Burası senin tribünün. Biletini al, koltuğuna otur.</p>
-    <input id="gAd" placeholder="@instagram kullanıcı adın" autocapitalize="off" autocomplete="off" spellcheck="false" value="${eski?'@'+eski:''}">
+    <input id="gAd" placeholder="@${PLAT.ad.toLowerCase()} kullanıcı adın" autocapitalize="off" autocomplete="off" spellcheck="false" value="${eski?'@'+eski:''}">
     <button class="ana" id="gAl">🎟️ BİLETİMİ AL</button><div class="not" id="gNot">${not}</div>
     <button class="ince" id="gMisafir">Misafir olarak stadı gez</button>`;
   const al=()=>{const q=modBtn('gAd').value.trim().replace(/^@/,'').toLowerCase(); if(!q){modBtn('gNot').textContent='Kullanıcı adını yaz.'; return;}
@@ -1387,7 +1387,8 @@ function girisFormu(not=''){
   modBtn('gMisafir').onclick=girisKapat;
 }
 function girisKapat(){ girisEl.classList.remove('ac'); }
-function girisGoster(){ if(url.get('giris')==='0') return; girisFormu(); girisEl.classList.add('ac'); }
+function girisGoster(){ if(url.get('giris')==='0'||PLAT.kod!=='instagram') return;   // bilet girişi yalnız Instagram stadında (Baran, 20 Kas)
+ girisFormu(); girisEl.classList.add('ac'); }
 
 modBtn('ipucu').innerHTML=MOBIL?'<b>1 parmak</b> döndür · <b>2 parmak</b> yakınlaş/kaydır · <b>▲▼</b> yukarı-aşağı · <b>çift dokun</b> oraya uç':'<b>Sürükle</b> döndür · <b>Tekerlek</b> imlece yakınlaş · <b>WASD</b> gez · <b>Q/E</b> dön · <b>Boşluk/C</b> yukarı-aşağı · <b>Sağ tık</b> kaydır · <b>Çift tık</b> oraya uç';
 setTimeout(()=>modBtn('ipucu').classList.add('kapali'),MOBIL?7000:12000);
@@ -1421,6 +1422,7 @@ window.__test={kam:()=>({c:cam.position.toArray().map(v=>+v.toFixed(1)),t:ctl.ta
   ilk11:a=>{ if(a===null) ILK11.goster(false); else { ILK11.ciz(a); ILK11.goster(true); } }, aracP:()=>[ARAC.amb.position.toArray(),ARAC.itf.position.toArray()],
   aracGoster:v=>{ARAC.amb.visible=ARAC.itf.visible=v;},
   carpDolu:(x,y,z)=>CARP.dolu(new THREE.Vector3(x,y,z)), carpZemin:(x,z)=>CARP.zemin(x,z),
+  koltukKonum:i=>koltuklar[sira[i]].p.toArray(),
   hedef:h=>{KARAR.hedef=h; const n=window.__ekranS; window.__ekranS=-1; __test.ekranSahne(n===undefined?null:n);},
   siradaki:a=>{KARAR.siradaki=a; const n=window.__ekranS; window.__ekranS=-1; __test.ekranSahne(n===undefined?null:n);},
   tribunSay:id=>{let n=0; for(const k of koltuklar) if(k.t.id===id) n++; return n;},
