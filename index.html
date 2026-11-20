@@ -177,7 +177,7 @@ const PLAT=(()=>{ const pq=new URLSearchParams(location.search).get('plat'); con
   return {kod:'instagram',ad:'Instagram',adDa:"Instagram'da",FIIL:'TAKİP ET',Fiil:'Takip et',cta:"@besincitribun'u takip et",eden:'hesabını takip eden',sira:'takip',link:'https://www.instagram.com/besincitribun/',veri:'takipciler.json',ek:''}; })();
 // Taraftarlar: takipciler.json {guncelleme, isimler[]} (takip sırasına göre). ?demo=1 → deneme adları.
 let VERI={guncelleme:null,isimler:[]};
-const SURUM=29;
+const SURUM=30;
 try{const r=await fetch('surum.json?t='+Date.now(),{cache:'no-store'}); if(r.ok){const v=(await r.json()).surum; if(v>SURUM && url.get('v')!==String(v)){const u=new URL(location.href); u.searchParams.set('v',v); location.replace(u.toString());}}}catch(e){}
 try{const r=await fetch(PLAT.veri+'?t='+Date.now(),{cache:'no-store'}); if(r.ok) VERI=await r.json();}catch(e){}
 if(url.get('n_gercek')) VERI.isimler=VERI.isimler.slice(0,+url.get('n_gercek')); // video: belirli bir andaki tribün
@@ -1356,6 +1356,8 @@ function tusHareket(t){ const dt=Math.min(0.05,(t-(_sonT||t))/1000); _sonT=t; if
   _o2.subVectors(cam.position,ctl.target); if(don) _o2.applyAxisAngle(cam.up,don*1.6*dt);
   if(yak) _o2.setLength(THREE.MathUtils.clamp(_o2.length()*Math.pow(1.9,yak*dt),ctl.minDistance,ctl.maxDistance));
   cam.position.copy(ctl.target).add(_o2); }
+// arama kutusu platforma göre (Baran, 20 Kas)
+{ const q=document.getElementById('q'); if(q) q.placeholder=PLAT.kod==='youtube'?"YouTube'daki adını ara":PLAT.kod==='tiktok'?'@TikTok kullanıcı adını ara':'@Instagram kullanıcı adını ara'; }
 /* ================== GİRİŞ: BİLETİNİ AL ================== */
 const girisEl=modBtn('giris'), girisKutu=modBtn('girisKutu');
 const IG=PLAT.link;
